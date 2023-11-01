@@ -1,0 +1,3 @@
+package lingo
+
+func main() {}
