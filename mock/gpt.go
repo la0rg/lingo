@@ -14,7 +14,10 @@ func (GPTClient) CreateChatCompletion(
 ) (response openai.ChatCompletionResponse, err error) {
 	return openai.ChatCompletionResponse{
 		Choices: []openai.ChatCompletionChoice{
-			{Message: openai.ChatCompletionMessage{Content: mockResponse}},
+			{
+				Message:      openai.ChatCompletionMessage{Content: mockResponse},
+				FinishReason: openai.FinishReasonStop,
+			},
 		},
 	}, nil
 }
@@ -33,26 +36,10 @@ const mockResponse = `
         }
       ],
       "article": "der",
-      "transcription": "/ˈkuːχən/",
-      "context": "Ich esse gerne Kuchen.",
-      "context_translation": "I like to eat cake.",
-      "definition": "Ein süßes Gebäck, das gebacken wird und meistens mit Creme oder Glasur versehen ist."
-    },
-    {
-      "word": "Kaffee",
-      "translations": [
-        {
-          "pos": "Noun",
-          "translations": [
-            "coffee"
-          ]
-        }
-      ],
-      "article": "der",
-      "transcription": "/ˈkafeː/",
-      "context": "Ich trinke jeden Morgen Kaffee.",
-      "context_translation": "I drink coffee every morning.",
-      "definition": "Ein heißes Getränk, das aus gerösteten Kaffeebohnen hergestellt wird."
+      "transcription": "/ˈkuːxən/",
+      "context": "Ich backe einen Kuchen.",
+      "context_translation": "I am baking a cake.",
+      "definition": "Ein süßes Gericht, das gebacken wird und typischerweise Mehl, Zucker, Eier und Butter enthält."
     },
     {
       "word": "Käse",
@@ -66,9 +53,9 @@ const mockResponse = `
       ],
       "article": "der",
       "transcription": "/ˈkɛːzə/",
-      "context": "Ich mag gerne Käse auf meinem Brot.",
-      "context_translation": "I like to have cheese on my bread.",
-      "definition": "Ein Milchprodukt, das aus gemolkener Milch hergestellt wird und einen charakteristischen Geschmack hat."
+      "context": "Ein Stück Käse bitte.",
+      "context_translation": "A piece of cheese, please.",
+      "definition": "Ein festes Nahrungsmittel aus Milch, das normalerweise gelb oder weiß ist und einen salzigen Geschmack hat."
     },
     {
       "word": "verrückt",
@@ -77,15 +64,14 @@ const mockResponse = `
           "pos": "Adjective",
           "translations": [
             "crazy",
-            "insane",
-            "mad"
+            "insane"
           ]
         }
       ],
-      "transcription": "/fɛrˈrʏkt/",
-      "context": "Er ist verrückt.",
-      "context_translation": "He is crazy.",
-      "definition": "Unvernünftig oder unkontrolliertes Verhalten, das von der Norm abweicht."
+      "transcription": "/fɛɐˈrʏkt/",
+      "context": "Bist du verrückt?",
+      "context_translation": "Are you crazy?",
+      "definition": "Nicht im Einklang mit der Vernunft oder dem gesunden Menschenverstand; geistig gestört."
     }
   ]
 }`

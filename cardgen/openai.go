@@ -11,6 +11,8 @@ import (
 	"github.com/la0rg/lingo/cardgen/prompt"
 )
 
+const tokenLimit = 2000
+
 type OpenAI struct {
 	client GPTClient
 }
@@ -35,7 +37,11 @@ func (g OpenAI) Generate(ctx context.Context, req Request) (*Cards, error) {
 	resp, err := g.client.CreateChatCompletion(
 		ctx,
 		openai.ChatCompletionRequest{
-			Model: openai.GPT3Dot5Turbo,
+			MaxTokens: tokenLimit,
+			Model:     openai.GPT3Dot5Turbo1106,
+			ResponseFormat: &openai.ChatCompletionResponseFormat{
+				Type: openai.ChatCompletionResponseFormatTypeJSONObject,
+			},
 			Messages: []openai.ChatCompletionMessage{
 				{Role: openai.ChatMessageRoleSystem, Content: prompt.System},
 				{Role: openai.ChatMessageRoleUser, Content: string(request)},
@@ -44,6 +50,11 @@ func (g OpenAI) Generate(ctx context.Context, req Request) (*Cards, error) {
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate cards: %v", err)
+	}
+
+	slog.Debug("OpenAI response", "response", resp)
+	if resp.Choices[0].FinishReason != openai.FinishReasonStop {
+		slog.Warn("Incomplete OpenAI response", "finish_reason", resp.Choices[0].FinishReason)
 	}
 
 	response := []byte(resp.Choices[0].Message.Content)

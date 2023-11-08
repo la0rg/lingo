@@ -3,7 +3,7 @@ module github.com/la0rg/lingo
 go 1.21.0
 
 require (
-	github.com/sashabaranov/go-openai v1.16.0
+	github.com/sashabaranov/go-openai v1.17.2
 	github.com/stretchr/testify v1.8.4
 	modernc.org/sqlite v1.26.0
 )
