@@ -28,8 +28,12 @@ func NewOpenAI(client GPTClient) (*OpenAI, error) {
 	return &OpenAI{client: client}, nil
 }
 
-func (g OpenAI) Generate(ctx context.Context, req Request) (*Cards, error) {
-	request, err := json.Marshal(req)
+func (g OpenAI) Generate(ctx context.Context, sourceLanguage, targetLanguage string, words ...string) (*Cards, error) {
+	request, err := json.Marshal(request{
+		SourceLanguage: sourceLanguage,
+		TargetLanguage: targetLanguage,
+		Words:          words,
+	})
 	if err != nil {
 		return nil, fmt.Errorf("unable to marshal request: %v", err)
 	}
@@ -50,6 +54,10 @@ func (g OpenAI) Generate(ctx context.Context, req Request) (*Cards, error) {
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate cards: %v", err)
+	}
+
+	if len(resp.Choices) < 1 {
+		return nil, fmt.Errorf("empty OpenAI response")
 	}
 
 	slog.Debug("OpenAI response", "response", resp)
