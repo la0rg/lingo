@@ -4,11 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log/slog"
 
 	"github.com/sashabaranov/go-openai"
 
 	"github.com/la0rg/lingo/cardgen/prompt"
+	"github.com/la0rg/lingo/logger"
 )
 
 const tokenLimit = 2000
@@ -60,16 +60,16 @@ func (g OpenAI) Generate(ctx context.Context, sourceLanguage, targetLanguage str
 		return nil, fmt.Errorf("empty OpenAI response")
 	}
 
-	slog.Debug("OpenAI response", "response", resp)
+	logger.WithContext(ctx).Debug("OpenAI response", "response", resp)
 	if resp.Choices[0].FinishReason != openai.FinishReasonStop {
-		slog.Warn("Incomplete OpenAI response", "finish_reason", resp.Choices[0].FinishReason)
+		logger.WithContext(ctx).Warn("Incomplete OpenAI response", "finish_reason", resp.Choices[0].FinishReason)
 	}
 
 	response := []byte(resp.Choices[0].Message.Content)
 
 	var cards Cards
 	if err := json.Unmarshal(response, &cards); err != nil {
-		slog.Warn("OpenAI response is not a valid json", slog.String("response", resp.Choices[0].Message.Content))
+		logger.WithContext(ctx).Warn("OpenAI response is not a valid json", "response", resp.Choices[0].Message.Content)
 		return nil, fmt.Errorf("unable to parse OpenAI response: %v", err)
 	}
 

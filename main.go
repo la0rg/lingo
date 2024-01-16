@@ -33,10 +33,10 @@ func main() {
 		log.Fatal(err)
 	}
 
-	router := handler.Router(generator)
+	router := handler.NewRouter(generator)
 
 	if err := startHTTPServer(conf, router); err != nil {
-		slog.Error("HTTP server failed", "error", err)
+		log.Fatal("HTTP server failed", err)
 	}
 
 	slog.Info("Server stopped")
@@ -56,12 +56,15 @@ func initLogger(conf *config.Config) {
 func startHTTPServer(conf *config.Config, handler http.Handler) error {
 	addr := fmt.Sprintf(":%d", conf.Port)
 	var srv = http.Server{
-		Addr:    addr,
-		Handler: handler,
+		Addr:         addr,
+		Handler:      handler,
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 5 * time.Second,
+		IdleTimeout:  30 * time.Second,
 	}
 
 	interrupt := make(chan os.Signal, 1)
-	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
+	signal.Notify(interrupt, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 	idleConnsClosed := make(chan struct{})
 
 	go func() {
