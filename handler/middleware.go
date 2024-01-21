@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"runtime/debug"
 	"time"
 
 	"github.com/go-chi/chi/middleware"
@@ -26,4 +27,19 @@ func RequestLogger(h http.Handler) http.Handler {
 
 		h.ServeHTTP(ww, r)
 	})
+}
+
+func Recoverer(next http.Handler) http.Handler {
+	fn := func(w http.ResponseWriter, r *http.Request) {
+		defer func() {
+			if rvr := recover(); rvr != nil && rvr != http.ErrAbortHandler {
+				logger.WithContext(r.Context()).Error("panic recovered", "stack", debug.Stack())
+				w.WriteHeader(http.StatusInternalServerError)
+			}
+		}()
+
+		next.ServeHTTP(w, r)
+	}
+
+	return http.HandlerFunc(fn)
 }

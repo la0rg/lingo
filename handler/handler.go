@@ -6,11 +6,11 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
-	"github.com/la0rg/lingo/cardgen"
+	"github.com/la0rg/lingo/model"
 )
 
 type CardsGenerator interface {
-	Generate(ctx context.Context, sourceLanguage, targetLanguage string, words ...string) (*cardgen.Cards, error)
+	Generate(ctx context.Context, sourceLanguage, targetLanguage string, words ...string) (*model.Cards, error)
 }
 
 type handlers struct {
@@ -24,9 +24,11 @@ func NewRouter(cards CardsGenerator) http.Handler {
 
 	r.Use(middleware.RequestID)
 	r.Use(RequestLogger)
-	r.Use(middleware.Recoverer)
+	r.Use(Recoverer)
 
-	r.HandleFunc("/card/{card_id}", ErrorHandler(handlers.GetCardHandler))
+	r.Route("/collections/{collection}", func(r chi.Router) {
+		r.Get("/cards/{card}", ErrorHandler(handlers.GetCard))
+	})
 
 	return r
 }

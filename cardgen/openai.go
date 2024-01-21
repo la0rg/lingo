@@ -9,6 +9,7 @@ import (
 
 	"github.com/la0rg/lingo/cardgen/prompt"
 	"github.com/la0rg/lingo/logger"
+	"github.com/la0rg/lingo/model"
 )
 
 const tokenLimit = 2000
@@ -28,7 +29,7 @@ func NewOpenAI(client GPTClient) (*OpenAI, error) {
 	return &OpenAI{client: client}, nil
 }
 
-func (g OpenAI) Generate(ctx context.Context, sourceLanguage, targetLanguage string, words ...string) (*Cards, error) {
+func (g OpenAI) Generate(ctx context.Context, sourceLanguage, targetLanguage string, words ...string) (*model.Cards, error) {
 	request, err := json.Marshal(request{
 		SourceLanguage: sourceLanguage,
 		TargetLanguage: targetLanguage,
@@ -67,7 +68,7 @@ func (g OpenAI) Generate(ctx context.Context, sourceLanguage, targetLanguage str
 
 	response := []byte(resp.Choices[0].Message.Content)
 
-	var cards Cards
+	var cards model.Cards
 	if err := json.Unmarshal(response, &cards); err != nil {
 		logger.WithContext(ctx).Warn("OpenAI response is not a valid json", "response", resp.Choices[0].Message.Content)
 		return nil, fmt.Errorf("unable to parse OpenAI response: %v", err)
