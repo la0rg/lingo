@@ -15,6 +15,7 @@ import (
 	"github.com/la0rg/lingo/config"
 	"github.com/la0rg/lingo/handler"
 	"github.com/la0rg/lingo/mock"
+	"github.com/la0rg/lingo/service"
 )
 
 func main() {
@@ -33,7 +34,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	router := handler.NewRouter(generator)
+	router := handler.NewRouter(generator, new(service.APKG))
 
 	if err := startHTTPServer(conf, router); err != nil {
 		log.Fatal("HTTP server failed", err)

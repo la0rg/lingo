@@ -14,7 +14,7 @@ const (
 )
 
 // Build builds an Anki apkg file from the given collection.
-func Build(c Collection) ([]byte, error) {
+func Build(c *Collection) ([]byte, error) {
 	apkg := new(bytes.Buffer)
 	archive := zip.NewWriter(apkg)
 
@@ -38,7 +38,7 @@ func Build(c Collection) ([]byte, error) {
 	return apkg.Bytes(), nil
 }
 
-func buildDB(c Collection) ([]byte, error) {
+func buildDB(c *Collection) ([]byte, error) {
 	db, err := apkgdb.NewDatabase()
 	if err != nil {
 		return nil, fmt.Errorf("failed to create apkgdb: %w", err)
@@ -72,17 +72,4 @@ func buildDB(c Collection) ([]byte, error) {
 	}
 
 	return buf.Bytes(), nil
-}
-
-func (c Collection) writeFile(archive *zip.Writer, filename string, data []byte) error {
-	w, err := archive.Create(filename)
-	if err != nil {
-		return fmt.Errorf("failed to create %s: %v", filename, err)
-	}
-
-	if _, err := w.Write(data); err != nil {
-		return fmt.Errorf("failed to write %s: %v", filename, err)
-	}
-
-	return nil
 }

@@ -31,7 +31,7 @@ func (h *handlers) Card(w http.ResponseWriter, r *http.Request) error {
 	card := strings.ToLower(chi.URLParam(r, "card"))
 
 	logger := logger.WithContext(r.Context()).With("collection", collectionName, "card", card)
-	logger.Info("Get card")
+	logger.Info("Creating a card")
 
 	result, err := h.cards.Generate(r.Context(), collection.sourceLanguage, collection.targetLanguage, card)
 	if err != nil {

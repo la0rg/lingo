@@ -1,6 +1,8 @@
 package apkg
 
 import (
+	"archive/zip"
+	"fmt"
 	"time"
 
 	"github.com/la0rg/lingo/apkg/apkgdb"
@@ -60,4 +62,17 @@ func (c Collection) buildCollection() apkgdb.Collection {
 		Decks:  maps.KeysToString(decks),
 		DConf:  maps.KeysToString(configs),
 	}
+}
+
+func (c Collection) writeFile(archive *zip.Writer, filename string, data []byte) error {
+	w, err := archive.Create(filename)
+	if err != nil {
+		return fmt.Errorf("failed to create %s: %v", filename, err)
+	}
+
+	if _, err := w.Write(data); err != nil {
+		return fmt.Errorf("failed to write %s: %v", filename, err)
+	}
+
+	return nil
 }
