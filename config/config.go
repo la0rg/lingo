@@ -3,13 +3,16 @@ package config
 import (
 	"errors"
 	"fmt"
+	"reflect"
+	"strings"
 
 	"github.com/spf13/viper"
 )
 
 type Config struct {
-	LogLevel string `mapstructure:"log_level"`
-	Port     int    `mapstructure:"port"`
+	LogLevel  string `mapstructure:"log_level"`
+	Port      int    `mapstructure:"port"`
+	OpenAIKey string `mapstructure:"openai_key"`
 }
 
 func Load() (*Config, error) {
@@ -22,7 +25,10 @@ func Load() (*Config, error) {
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath("$HOME/.lingo")
 	viper.AddConfigPath(".")
-	viper.AutomaticEnv()
+
+	if err := bindEnvs(); err != nil {
+		return nil, fmt.Errorf("unable to bind envs: %w", err)
+	}
 
 	err := viper.ReadInConfig()
 	if err != nil && !errors.As(err, new(viper.ConfigFileNotFoundError)) {
@@ -34,4 +40,18 @@ func Load() (*Config, error) {
 	}
 
 	return &conf, nil
+}
+
+func bindEnvs() error {
+	r := reflect.TypeOf(Config{})
+	for i := 0; i < r.NumField(); i++ {
+		f := r.Field(i)
+		tag := f.Tag.Get("mapstructure")
+
+		if err := viper.BindEnv(tag, strings.ToUpper(tag)); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

@@ -27,7 +27,7 @@ func NewRouter(cards CardsGenerator) http.Handler {
 	r.Use(Recoverer)
 
 	r.Route("/collections/{collection}", func(r chi.Router) {
-		r.Get("/cards/{card}", ErrorHandler(handlers.GetCard))
+		r.Get("/cards/{card}", ErrorHandler(handlers.Card))
 	})
 
 	return r

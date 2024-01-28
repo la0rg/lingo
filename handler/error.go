@@ -55,6 +55,8 @@ func ErrorHandler(h HandlerFunc) http.HandlerFunc {
 		}
 
 		httpErr := mapError(r.Context(), err)
+		logger.WithContext(r.Context()).Info("request failed", "error", err)
+
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(httpErr.Code)
 		JSON(w, r, httpErr)
@@ -62,9 +64,12 @@ func ErrorHandler(h HandlerFunc) http.HandlerFunc {
 }
 
 func mapError(ctx context.Context, err error) *HTTPError {
+	if httpErr, ok := err.(*HTTPError); ok {
+		return httpErr
+	}
+
 	for e, httpErr := range errorMapping {
 		if errors.Is(err, e) {
-			logger.WithContext(ctx).Info("request failed", "error", err)
 			return httpErr
 		}
 	}

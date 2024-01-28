@@ -25,7 +25,7 @@ func main() {
 
 	initLogger(conf)
 
-	//gpt := openai.NewClient(os.Getenv("OPENAI_API_KEY"))
+	// gpt := openai.NewClient(conf.OpenAIKey)
 	gpt := mock.GPTClient{}
 
 	generator, err := cardgen.NewOpenAI(gpt)
