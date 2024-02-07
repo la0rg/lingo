@@ -7,6 +7,7 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"github.com/la0rg/lingo/apkg"
+	"github.com/la0rg/lingo/config"
 	"github.com/la0rg/lingo/model"
 )
 
@@ -19,12 +20,13 @@ type APKGService interface {
 }
 
 type handlers struct {
+	conf  *config.Config
 	cards CardsGenerator
 	apkg  APKGService
 }
 
-func NewRouter(cards CardsGenerator, apkg APKGService) http.Handler {
-	handlers := handlers{cards: cards, apkg: apkg}
+func NewRouter(conf *config.Config, cards CardsGenerator, apkg APKGService) http.Handler {
+	handlers := handlers{conf: conf, cards: cards, apkg: apkg}
 
 	r := chi.NewRouter()
 
@@ -34,7 +36,7 @@ func NewRouter(cards CardsGenerator, apkg APKGService) http.Handler {
 
 	r.Route("/collections/{collection}", func(r chi.Router) {
 		r.Get("/cards/{card}", ErrorHandler(handlers.Card))
-		r.Get("/apkg", ErrorHandler(handlers.APKG))
+		r.Post("/apkg", ErrorHandler(handlers.APKG))
 	})
 
 	return r

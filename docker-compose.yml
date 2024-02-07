@@ -1,0 +1,9 @@
+version: "3"
+services:
+  minio:
+    image: "minio/minio:latest"
+    entrypoint: sh
+    ports:
+      - "9000:9000"
+      - "9090:9090"
+    command: -c 'mkdir -p /data/lingo &&  /usr/bin/minio server /data --console-address ":9090"'

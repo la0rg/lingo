@@ -33,8 +33,7 @@ var apkgConfig = apkg.DefaultConfig(6493485093845, "lingo_config")
 
 var ErrEmptyCards = fmt.Errorf("empty cards")
 
-type APKG struct {
-}
+type APKG struct{}
 
 func (a *APKG) Create(ctx context.Context, cards *model.Cards) (*apkg.Collection, error) {
 	if cards.Cards == nil || len(cards.Cards) < 1 {

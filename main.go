@@ -34,7 +34,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	router := handler.NewRouter(generator, new(service.APKG))
+	router := handler.NewRouter(conf, generator, new(service.APKG))
 
 	if err := startHTTPServer(conf, router); err != nil {
 		log.Fatal("HTTP server failed", err)
