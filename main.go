@@ -24,6 +24,8 @@ func main() {
 		log.Fatal(err)
 	}
 
+	slog.Info("Config loaded", "config", conf)
+
 	initLogger(conf)
 
 	// gpt := openai.NewClient(conf.OpenAIKey)

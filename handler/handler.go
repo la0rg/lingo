@@ -33,6 +33,7 @@ func NewRouter(conf *config.Config, cards CardsGenerator, apkg APKGService) http
 	r.Use(middleware.RequestID)
 	r.Use(RequestLogger)
 	r.Use(Recoverer)
+	r.Use(APIKey(conf))
 
 	r.Route("/collections/{collection}", func(r chi.Router) {
 		r.Get("/cards/{card}", ErrorHandler(handlers.Card))

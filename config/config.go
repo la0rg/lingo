@@ -10,10 +10,11 @@ import (
 )
 
 type Config struct {
-	Local     bool   `mapstructure:"local"`
-	LogLevel  string `mapstructure:"log_level"`
-	Port      int    `mapstructure:"port"`
-	OpenAIKey string `mapstructure:"openai_key"`
+	Local     bool     `mapstructure:"local"`
+	LogLevel  string   `mapstructure:"log_level"`
+	Port      int      `mapstructure:"port"`
+	OpenAIKey string   `mapstructure:"openai_key"`
+	APIKeys   []string `mapstructure:"api_keys"`
 }
 
 func Load() (*Config, error) {

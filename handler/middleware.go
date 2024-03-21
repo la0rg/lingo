@@ -3,11 +3,40 @@ package handler
 import (
 	"net/http"
 	"runtime/debug"
+	"slices"
+	"strings"
 	"time"
 
 	"github.com/go-chi/chi/middleware"
+	"github.com/la0rg/lingo/config"
 	"github.com/la0rg/lingo/logger"
 )
+
+func APIKey(c *config.Config) func(http.Handler) http.Handler {
+	return func(h http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			authHeader := strings.TrimSpace(r.Header.Get("Authorization"))
+			if authHeader == "" {
+				http.Error(w, "Unauthorized", http.StatusUnauthorized)
+				return
+			}
+
+			parts := strings.Split(authHeader, " ")
+			if len(parts) != 2 || parts[0] != "Bearer" {
+				http.Error(w, "Invalid token", http.StatusUnauthorized)
+				return
+			}
+
+			apiKey := parts[1]
+			if !slices.Contains(c.APIKeys, apiKey) {
+				http.Error(w, "Invalid token", http.StatusUnauthorized)
+				return
+			}
+
+			h.ServeHTTP(w, r)
+		})
+	}
+}
 
 func RequestLogger(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

@@ -1,2 +1,5 @@
 local: true
-log_level: "DEBUG"
+log_level: "INFO"
+api_keys:
+  - "0c80d8c3-889c-441c-b792-50ae271a4348"
+  - "9d8bffd0-2e98-4d0d-959a-f72ce1a97d39"
