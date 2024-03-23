@@ -7,3 +7,10 @@ services:
       - "9000:9000"
       - "9090:9090"
     command: -c 'mkdir -p /data/lingo &&  /usr/bin/minio server /data --console-address ":9090"'
+
+  dynamodb:
+    command: "-jar DynamoDBLocal.jar -sharedDb -inMemory"
+    image: "amazon/dynamodb-local:latest"
+    container_name: dynamodb
+    ports:
+      - "8000:8000"
