@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/go-chi/chi"
 	"github.com/google/uuid"
@@ -61,31 +60,7 @@ func (h *handlers) APKG(w http.ResponseWriter, r *http.Request) error {
 }
 
 func (h *handlers) saveToS3(ctx context.Context, key string, archive []byte) (string, error) {
-	// Load the Shared AWS Configuration (~/.aws/config)
-	opts := []func(*config.LoadOptions) error{}
-
-	if h.conf.Local {
-		staticResolver := aws.EndpointResolverWithOptionsFunc(
-			func(service, region string, options ...interface{}) (aws.Endpoint, error) {
-				return aws.Endpoint{
-					PartitionID:       "aws",
-					URL:               "http://localhost:9000", // or where ever you ran minio
-					SigningRegion:     "us-east-1",
-					HostnameImmutable: true,
-				}, nil
-			})
-		opts = append(opts, config.WithEndpointResolverWithOptions(staticResolver))
-	}
-
-	cfg, err := config.LoadDefaultConfig(context.TODO(), opts...)
-	if err != nil {
-		return "", err
-	}
-
-	// Create an Amazon S3 service client
-	client := s3.NewFromConfig(cfg)
-
-	_, err = client.PutObject(ctx, &s3.PutObjectInput{
+	_, err := h.s3.PutObject(ctx, &s3.PutObjectInput{
 		Bucket: aws.String("lingo"),
 		Key:    aws.String(key),
 		Body:   bytes.NewReader(archive),
@@ -94,7 +69,7 @@ func (h *handlers) saveToS3(ctx context.Context, key string, archive []byte) (st
 		return "", fmt.Errorf("unable to save file to S3: %v", err)
 	}
 
-	presignedResponse, err := s3.NewPresignClient(client).PresignGetObject(
+	presignedResponse, err := h.s3.PresignGetObject(
 		ctx,
 		&s3.GetObjectInput{
 			Bucket: aws.String("lingo"),

@@ -4,6 +4,8 @@ import (
 	"context"
 	"net/http"
 
+	v4 "github.com/aws/aws-sdk-go-v2/aws/signer/v4"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"github.com/la0rg/lingo/apkg"
@@ -19,14 +21,20 @@ type APKGService interface {
 	Create(ctx context.Context, cards *model.Cards) (*apkg.Collection, error)
 }
 
+type S3Client interface {
+	PutObject(ctx context.Context, params *s3.PutObjectInput, optFns ...func(*s3.Options)) (*s3.PutObjectOutput, error)
+	PresignGetObject(ctx context.Context, params *s3.GetObjectInput, optFns ...func(*s3.PresignOptions)) (*v4.PresignedHTTPRequest, error)
+}
+
 type handlers struct {
 	conf  *config.Config
 	cards CardsGenerator
 	apkg  APKGService
+	s3    S3Client
 }
 
-func NewRouter(conf *config.Config, cards CardsGenerator, apkg APKGService) http.Handler {
-	handlers := handlers{conf: conf, cards: cards, apkg: apkg}
+func NewRouter(conf *config.Config, cards CardsGenerator, apkg APKGService, s3 S3Client) http.Handler {
+	handlers := handlers{conf: conf, cards: cards, apkg: apkg, s3: s3}
 
 	r := chi.NewRouter()
 

@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/la0rg/lingo/cardgen"
+	"github.com/la0rg/lingo/client"
 	"github.com/la0rg/lingo/config"
 	"github.com/la0rg/lingo/handler"
 	"github.com/la0rg/lingo/mock"
@@ -36,7 +37,12 @@ func main() {
 		log.Fatal(err)
 	}
 
-	router := handler.NewRouter(conf, generator, new(service.APKG))
+	s3, err := client.NewS3(context.Background(), conf)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	router := handler.NewRouter(conf, generator, new(service.APKG), s3)
 
 	if err := startHTTPServer(conf, router); err != nil {
 		log.Fatal("HTTP server failed", err)
