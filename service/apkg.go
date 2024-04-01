@@ -6,7 +6,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/google/uuid"
+
 	"github.com/la0rg/lingo/apkg"
+	"github.com/la0rg/lingo/logger"
 	"github.com/la0rg/lingo/model"
 )
 
@@ -33,9 +36,44 @@ var apkgConfig = apkg.DefaultConfig(6493485093845, "lingo_config")
 
 var ErrEmptyCards = fmt.Errorf("empty cards")
 
-type APKG struct{}
+type APKG struct {
+	generator CardGenerator
+	repo      APKGRepository
+}
 
-func (a *APKG) Create(ctx context.Context, cards *model.Cards) (*apkg.Collection, error) {
+func NewAPKG(generator CardGenerator, repo APKGRepository) *APKG {
+	return &APKG{generator: generator, repo: repo}
+}
+
+func (s *APKG) CreateOnS3(ctx context.Context, collection *model.Collection, words ...string) (string, error) {
+	logger := logger.WithContext(ctx).
+		With("collection", collection.ID, "words", strings.Join(words, ","))
+	logger.Info("Creating an APKG file")
+
+	cards, err := s.generator.Generate(ctx, collection, words...)
+	if err != nil {
+		return "", fmt.Errorf("unable to generate cards: %w", err)
+	}
+
+	apkgCollection, err := s.buildAPKG(cards)
+	if err != nil {
+		return "", fmt.Errorf("unable to create APKG collection: %w", err)
+	}
+
+	archive, err := apkg.Build(apkgCollection)
+	if err != nil {
+		return "", fmt.Errorf("unable to build APKG file: %w", err)
+	}
+
+	url, err := s.repo.StoreAndGetURL(ctx, s.s3Key(collection), archive)
+	if err != nil {
+		return "", fmt.Errorf("unable to save APKG file to S3: %w", err)
+	}
+
+	return url, nil
+}
+
+func (s *APKG) buildAPKG(cards *model.Cards) (*apkg.Collection, error) {
 	if cards.Cards == nil || len(cards.Cards) < 1 {
 		return nil, ErrEmptyCards
 	}
@@ -66,4 +104,8 @@ func (a *APKG) Create(ctx context.Context, cards *model.Cards) (*apkg.Collection
 			Notes:  notes,
 		}},
 	}, nil
+}
+
+func (s *APKG) s3Key(collection *model.Collection) string {
+	return fmt.Sprintf("apkg/%s/lingo_%s.apkg", uuid.New().String(), collection.ID)
 }

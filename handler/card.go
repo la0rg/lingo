@@ -6,46 +6,26 @@ import (
 	"strings"
 
 	"github.com/go-chi/chi"
-	"github.com/la0rg/lingo/logger"
+	"github.com/la0rg/lingo/model"
 )
-
-type Collection struct {
-	sourceLanguage string
-	targetLanguage string
-}
-
-var collections = map[string]Collection{
-	"de-en": {sourceLanguage: "de", targetLanguage: "en"},
-}
 
 var ErrCollectionNotFound = fmt.Errorf("collection not found")
 
 func (h *handlers) Card(w http.ResponseWriter, r *http.Request) error {
 	collectionName := strings.ToLower(chi.URLParam(r, "collection"))
 
-	collection, ok := collections[collectionName]
+	collection, ok := model.Collections[collectionName]
 	if !ok {
 		return ErrCollectionNotFound
 	}
 
-	card := strings.ToLower(chi.URLParam(r, "card"))
+	word := strings.ToLower(chi.URLParam(r, "word"))
 
-	logger := logger.WithContext(r.Context()).With("collection", collectionName, "card", card)
-	logger.Info("Creating a card")
-
-	result, err := h.cards.Generate(r.Context(), collection.sourceLanguage, collection.targetLanguage, card)
+	card, err := h.card.Get(r.Context(), collection, word)
 	if err != nil {
-		return fmt.Errorf("unable to generate cards: %v", err)
+		return err
 	}
 
-	if len(result.Cards) < 1 {
-		return fmt.Errorf("no cards generated")
-	}
-
-	if len(result.Cards) > 1 {
-		logger.Warn("more than one card generated", "cards", result.Cards)
-	}
-
-	JSON(w, r, result.Cards[0])
+	JSON(w, r, card)
 	return nil
 }

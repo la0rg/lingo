@@ -52,7 +52,12 @@ func Run(ctx context.Context, conf *config.Config) error {
 		return err
 	}
 
-	router := handler.NewRouter(conf, generator, new(service.APKG), s3)
+	cardRepo := repository.NewCard(db)
+	apkgRepo := repository.NewAPKG(s3)
+	cardService := service.NewCard(generator, cardRepo)
+	apkgService := service.NewAPKG(generator, apkgRepo)
+
+	router := handler.NewRouter(conf, cardService, apkgService)
 
 	if err := startHTTPServer(conf, router); err != nil {
 		return err

@@ -29,10 +29,10 @@ func NewOpenAI(client GPTClient) (*OpenAI, error) {
 	return &OpenAI{client: client}, nil
 }
 
-func (g OpenAI) Generate(ctx context.Context, sourceLanguage, targetLanguage string, words ...string) (*model.Cards, error) {
+func (g OpenAI) Generate(ctx context.Context, collection *model.Collection, words ...string) (*model.Cards, error) {
 	request, err := json.Marshal(request{
-		SourceLanguage: sourceLanguage,
-		TargetLanguage: targetLanguage,
+		SourceLanguage: collection.SourceLanguage,
+		TargetLanguage: collection.TargetLanguage,
 		Words:          words,
 	})
 	if err != nil {
@@ -72,6 +72,11 @@ func (g OpenAI) Generate(ctx context.Context, sourceLanguage, targetLanguage str
 	if err := json.Unmarshal(response, &cards); err != nil {
 		logger.WithContext(ctx).Warn("OpenAI response is not a valid json", "response", resp.Choices[0].Message.Content)
 		return nil, fmt.Errorf("unable to parse OpenAI response: %v", err)
+	}
+
+	// TODO: refactor
+	for i := range cards.Cards {
+		cards.Cards[i].Collection = collection.ID
 	}
 
 	return &cards, nil
