@@ -25,14 +25,13 @@ import (
 )
 
 func Run(ctx context.Context, conf *config.Config) error {
-	gpt := initGPT()
+	gpt := gpt()
 
-	awsConfig, err := initAWSConfig(ctx, conf)
+	dbConfig, err := dbConfig(ctx, conf)
 	if err != nil {
 		return err
 	}
-
-	db := dynamodb.NewFromConfig(awsConfig)
+	db := dynamodb.NewFromConfig(dbConfig)
 
 	if err := repository.NewMigration(db).Run(ctx); err != nil {
 		return err
@@ -43,7 +42,12 @@ func Run(ctx context.Context, conf *config.Config) error {
 		return err
 	}
 
-	s3, err := client.NewS3(ctx, awsConfig)
+	s3Config, err := s3Config(ctx, conf)
+	if err != nil {
+		return err
+	}
+
+	s3, err := client.NewS3(ctx, s3Config)
 	if err != nil {
 		return err
 	}
@@ -58,38 +62,16 @@ func Run(ctx context.Context, conf *config.Config) error {
 	return nil
 }
 
-func initGPT() cardgen.GPTClient {
+func gpt() cardgen.GPTClient {
 	// return openai.NewClient(conf.OpenAIKey)
 	return mock.GPTClient{}
 }
 
-func initAWSConfig(ctx context.Context, conf *config.Config) (aws.Config, error) {
-	opts := []func(*awsconfig.LoadOptions) error{}
+func dbConfig(ctx context.Context, conf *config.Config) (aws.Config, error) {
+	var opts []func(*awsconfig.LoadOptions) error
 
 	if conf.Local {
-		staticResolver := aws.EndpointResolverWithOptionsFunc(
-			func(service, region string, options ...interface{}) (aws.Endpoint, error) {
-				return aws.Endpoint{
-					PartitionID:       "aws",
-					URL:               "http://localhost:8000",
-					SigningRegion:     "us-east-1",
-					HostnameImmutable: true,
-				}, nil
-			})
-
-		credentialsProvider := credentials.StaticCredentialsProvider{
-			Value: aws.Credentials{
-				AccessKeyID: "3f1lzp", SecretAccessKey: "m716ts", SessionToken: "",
-				Source: "Mock credentials used above for local instance",
-			},
-		}
-
-		opts = append(
-			opts,
-			awsconfig.WithRegion("us-east-1"),
-			awsconfig.WithEndpointResolverWithOptions(staticResolver),
-			awsconfig.WithCredentialsProvider(credentialsProvider),
-		)
+		opts = localAWSOpts("http://localhost:8000", "us-east-1", "dynamodb", "dynamodb")
 	}
 
 	awsConfig, err := awsconfig.LoadDefaultConfig(ctx, opts...)
@@ -98,6 +80,46 @@ func initAWSConfig(ctx context.Context, conf *config.Config) (aws.Config, error)
 	}
 
 	return awsConfig, nil
+}
+
+func s3Config(ctx context.Context, conf *config.Config) (aws.Config, error) {
+	var opts []func(*awsconfig.LoadOptions) error
+
+	if conf.Local {
+		opts = localAWSOpts("http://localhost:9000", "us-east-1", "minioadmin", "minioadmin")
+	}
+
+	awsConfig, err := awsconfig.LoadDefaultConfig(ctx, opts...)
+	if err != nil {
+		return awsConfig, fmt.Errorf("unable to load AWS config: %v", err)
+	}
+
+	return awsConfig, nil
+}
+
+func localAWSOpts(url, region, key, secret string) []func(*awsconfig.LoadOptions) error {
+	staticResolver := aws.EndpointResolverWithOptionsFunc(
+		func(service, region string, options ...interface{}) (aws.Endpoint, error) {
+			return aws.Endpoint{
+				PartitionID:       "aws",
+				URL:               url,
+				SigningRegion:     region,
+				HostnameImmutable: true,
+			}, nil
+		})
+
+	credentialsProvider := credentials.StaticCredentialsProvider{
+		Value: aws.Credentials{
+			AccessKeyID: key, SecretAccessKey: secret, SessionToken: "",
+			Source: "Mock credentials used above for local instance",
+		},
+	}
+
+	return []func(*awsconfig.LoadOptions) error{
+		awsconfig.WithRegion(region),
+		awsconfig.WithEndpointResolverWithOptions(staticResolver),
+		awsconfig.WithCredentialsProvider(credentialsProvider),
+	}
 }
 
 // startHTTPServer starts the HTTP server and blocks until it's stopped.
