@@ -11,11 +11,11 @@ import (
 )
 
 type CardService interface {
-	Get(ctx context.Context, collection *model.Collection, word string) (*model.Card, error)
+	Get(ctx context.Context, collection *model.Collection, word model.Word) (*model.Card, error)
 }
 
 type APKGService interface {
-	CreateOnS3(ctx context.Context, collection *model.Collection, words ...string) (string, error)
+	CreateOnS3(ctx context.Context, collection *model.Collection, words ...model.Word) (string, error)
 }
 
 type handlers struct {

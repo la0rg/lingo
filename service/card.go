@@ -17,31 +17,40 @@ func NewCard(generator CardGenerator, repo CardRepository) *Card {
 	return &Card{generator: generator, repo: repo}
 }
 
-func (s *Card) Get(ctx context.Context, collection *model.Collection, word string) (*model.Card, error) {
+func (s *Card) Get(ctx context.Context, collection *model.Collection, word model.Word) (*model.Card, error) {
 	logger := logger.WithContext(ctx).With("collection", collection.ID, "card", word)
-	logger.Info("Creating a card")
+	logger.Info("Getting a card")
 
-	result, err := s.generator.Generate(ctx, collection, word)
+	card, err := s.repo.Get(ctx, collection.ID, word)
+	if err != nil {
+		return nil, err
+	}
+
+	if card != nil {
+		return card, nil
+	}
+
+	logger.Info("Card is not found. Generatinng a new one.")
+
+	cards, err := s.generator.Generate(ctx, collection, word)
 	if err != nil {
 		return nil, fmt.Errorf("unable to generate a card: %v", err)
 	}
 
-	if len(result.Cards) < 1 {
+	if len(cards) < 1 {
 		return nil, fmt.Errorf("no cards generated")
 	}
 
-	if len(result.Cards) > 1 {
-		logger.Warn("more than one card generated", "cards", result.Cards)
+	if len(cards) > 1 {
+		logger.Warn("more than one card generated", "cards", cards)
 	}
-
-	card := result.Cards[0]
 
 	go func() {
 		ctx := context.WithoutCancel(ctx)
-		if err := s.repo.Put(ctx, card); err != nil {
+		if err := s.repo.Put(ctx, cards[0]); err != nil {
 			logger.Error("Failed to store a card in DB", "error", err)
 		}
 	}()
 
-	return &card, nil
+	return &cards[0], nil
 }

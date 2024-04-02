@@ -19,7 +19,10 @@ func (h *handlers) Card(w http.ResponseWriter, r *http.Request) error {
 		return ErrCollectionNotFound
 	}
 
-	word := strings.ToLower(chi.URLParam(r, "word"))
+	word := model.NewWord(chi.URLParam(r, "word"))
+	if err := word.Validate(); err != nil {
+		return BadRequest("invalid word")
+	}
 
 	card, err := h.card.Get(r.Context(), collection, word)
 	if err != nil {

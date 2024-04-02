@@ -1,11 +1,7 @@
 package model
 
-type Cards struct {
-	Cards []Card `json:"cards"`
-}
-
 type Card struct {
-	Word               string        `json:"word" dynamodbav:"word"`
+	Word               Word          `json:"word" dynamodbav:"word"`
 	Collection         string        `json:"collection" dynamodbav:"collection"`
 	Translations       []Translation `json:"translations" dynamodbav:"translations"`
 	Article            string        `json:"article" dynamodbav:"article,omitempty"`
@@ -16,6 +12,6 @@ type Card struct {
 }
 
 type Translation struct {
-	PartOfSpeech string   `json:"pos" dynamodbav:"pos"`
+	PartOfSpeech string   `json:"pos" dynamodbav:"pos,omitempty"`
 	Translations []string `json:"translations" dynamodbav:"translations"`
 }
