@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
@@ -13,14 +14,14 @@ import (
 
 var cardsTableSchema = &dynamodb.CreateTableInput{
 	AttributeDefinitions: []types.AttributeDefinition{{
-		AttributeName: aws.String("word"),
+		AttributeName: aws.String("key"),
 		AttributeType: types.ScalarAttributeTypeS,
 	}, {
 		AttributeName: aws.String("collection"),
 		AttributeType: types.ScalarAttributeTypeS,
 	}},
 	KeySchema: []types.KeySchemaElement{{
-		AttributeName: aws.String("word"),
+		AttributeName: aws.String("key"),
 		KeyType:       types.KeyTypeHash,
 	}, {
 		AttributeName: aws.String("collection"),
@@ -42,7 +43,12 @@ func NewMigration(client *dynamodb.Client) Migration {
 }
 
 func (m Migration) Run(ctx context.Context) error {
-	return m.createIfNotExists(ctx, cardsTableSchema)
+	if err := m.createIfNotExists(ctx, cardsTableSchema); err != nil {
+		return err
+	}
+
+	slog.Info("Migration completed")
+	return nil
 }
 
 func (m Migration) createIfNotExists(ctx context.Context, input *dynamodb.CreateTableInput) error {
@@ -75,6 +81,8 @@ func (m Migration) tableExists(ctx context.Context, tableName string) (bool, err
 }
 
 func (m Migration) createTable(ctx context.Context, input *dynamodb.CreateTableInput) error {
+	slog.Info("Creating table", "table", input.TableName)
+
 	_, err := m.client.CreateTable(ctx, input)
 	if err != nil {
 		return fmt.Errorf("unnable to create a table: %v", err)

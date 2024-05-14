@@ -1,7 +1,7 @@
 package model
 
 type APKGRequest struct {
-	Words []Word `json:"words"`
+	Words []string `json:"words"`
 }
 
 type APKGResponse struct {

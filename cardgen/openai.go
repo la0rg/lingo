@@ -29,7 +29,7 @@ func NewOpenAI(client GPTClient) (*OpenAI, error) {
 	return &OpenAI{client: client}, nil
 }
 
-func (g OpenAI) Generate(ctx context.Context, collection *model.Collection, words ...model.Word) ([]model.Card, error) {
+func (g OpenAI) Generate(ctx context.Context, collection *model.Collection, words ...string) ([]model.Card, error) {
 	request, err := json.Marshal(request{
 		SourceLanguage: collection.SourceLanguage,
 		TargetLanguage: collection.TargetLanguage,

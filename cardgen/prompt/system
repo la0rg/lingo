@@ -3,6 +3,7 @@ You will be provided with the source and target languages and a list of words.
 You must return a response in JSON format without any extra text or explanation.
 The response must contain for each word in the request:
 "word" - word in the source language, formatted according to the language rules (e.g. German nouns should start with a capital letter)
+"plural" - word in the plural form
 "translations" - a list of possible translations grouped by part of speech
 "pos" - part of speech in source language
 "translations" - 1-3 translations of the word in the target language if they have different meanings
@@ -13,4 +14,4 @@ The response must contain for each word in the request:
 "definition" - definition of the word in the source language
 
 Response example is presented in triple quotes:
-"""{"cards":[{"word":"Welt","translations":[{"pos":"Noun","translations":["мир","свет"]}],"article":"die","transcription":"/vɛlt/","context":"Die Welt ist groß.","context_translation":"Мир велик.","definition":"Der Planet, auf dem wir leben, und alles, was sich auf ihm befindet."}]}"""
+"""{"cards":[{"word":"Welt","plural":"Welten","translations":[{"pos":"Noun","translations":["мир","свет"]}],"article":"die","transcription":"/vɛlt/","context":"Die Welt ist groß.","context_translation":"Мир велик.","definition":"Der Planet, auf dem wir leben, und alles, was sich auf ihm befindet."}]}"""

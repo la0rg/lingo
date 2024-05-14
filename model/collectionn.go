@@ -12,4 +12,9 @@ var Collections = map[string]*Collection{
 		SourceLanguage: "de",
 		TargetLanguage: "en",
 	},
+	"de-ru": {
+		ID:             "de-ru",
+		SourceLanguage: "de",
+		TargetLanguage: "ru",
+	},
 }

@@ -17,8 +17,8 @@ func NewCard(generator CardGenerator, repo CardRepository) *Card {
 	return &Card{generator: generator, repo: repo}
 }
 
-func (s *Card) Get(ctx context.Context, collection *model.Collection, word model.Word) (*model.Card, error) {
-	logger := logger.WithContext(ctx).With("collection", collection.ID, "card", word)
+func (s *Card) Get(ctx context.Context, collection *model.Collection, word string) (*model.Card, error) {
+	logger := logger.WithContext(ctx).With("collection", collection.ID, "word", word)
 	logger.Info("Getting a card")
 
 	card, err := s.repo.Get(ctx, collection.ID, word)
@@ -27,10 +27,11 @@ func (s *Card) Get(ctx context.Context, collection *model.Collection, word model
 	}
 
 	if card != nil {
+		logger.Info("Card is found in DB.")
 		return card, nil
 	}
 
-	logger.Info("Card is not found. Generatinng a new one.")
+	logger.Info("Card is not found. Generating a new one.")
 
 	cards, err := s.generator.Generate(ctx, collection, word)
 	if err != nil {

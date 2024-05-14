@@ -45,7 +45,7 @@ func NewAPKG(generator CardGenerator, repo APKGRepository) *APKG {
 	return &APKG{generator: generator, repo: repo}
 }
 
-func (s *APKG) CreateOnS3(ctx context.Context, collection *model.Collection, words ...model.Word) (string, error) {
+func (s *APKG) CreateOnS3(ctx context.Context, collection *model.Collection, words ...string) (string, error) {
 	logger := logger.WithContext(ctx).With("collection", collection.ID, "words", words)
 	logger.Info("Creating an APKG file")
 
@@ -89,7 +89,7 @@ func (s *APKG) buildAPKG(cards []model.Card) (*apkg.Collection, error) {
 		notes = append(notes, apkg.Note{
 			ID:     id, // TODO: save ID in DB
 			Model:  de_en_model,
-			Fields: []string{card.Word.String(), strings.Join(translations, ", ")},
+			Fields: []string{card.Word, strings.Join(translations, ", ")},
 		})
 
 		id++

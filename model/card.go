@@ -1,8 +1,9 @@
 package model
 
 type Card struct {
-	Word               Word          `json:"word" dynamodbav:"word"`
+	Word               string        `json:"word" dynamodbav:"word"`
 	Collection         string        `json:"collection" dynamodbav:"collection"`
+	Plural             string        `json:"plural" dynamodbav:"plural"`
 	Translations       []Translation `json:"translations" dynamodbav:"translations"`
 	Article            string        `json:"article" dynamodbav:"article,omitempty"`
 	Transcription      string        `json:"transcription" dynamodbav:"transcription,omitempty"`

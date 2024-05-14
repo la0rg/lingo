@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
@@ -11,11 +12,18 @@ import (
 )
 
 type Card struct {
+	partitionKey string
+	sortKey      string
+
 	client *dynamodb.Client
 }
 
 func NewCard(client *dynamodb.Client) *Card {
-	return &Card{client: client}
+	return &Card{
+		partitionKey: "key",
+		sortKey:      "collection",
+		client:       client,
+	}
 }
 
 func (r *Card) Put(ctx context.Context, card model.Card) error {
@@ -23,6 +31,8 @@ func (r *Card) Put(ctx context.Context, card model.Card) error {
 	if err != nil {
 		return fmt.Errorf("unable to marshal card: %v", err)
 	}
+
+	item[r.partitionKey] = &types.AttributeValueMemberS{Value: r.buildPartitionKey(card.Word)}
 
 	_, err = r.client.PutItem(ctx, &dynamodb.PutItemInput{
 		TableName: cardsTableSchema.TableName,
@@ -35,10 +45,10 @@ func (r *Card) Put(ctx context.Context, card model.Card) error {
 	return nil
 }
 
-func (r *Card) Get(ctx context.Context, collection string, word model.Word) (*model.Card, error) {
+func (r *Card) Get(ctx context.Context, collection string, word string) (*model.Card, error) {
 	key := map[string]types.AttributeValue{
-		"word":       &types.AttributeValueMemberS{Value: word.String()},
-		"collection": &types.AttributeValueMemberS{Value: collection},
+		r.partitionKey: &types.AttributeValueMemberS{Value: r.buildPartitionKey(word)},
+		r.sortKey:      &types.AttributeValueMemberS{Value: collection},
 	}
 
 	response, err := r.client.GetItem(ctx, &dynamodb.GetItemInput{
@@ -58,4 +68,8 @@ func (r *Card) Get(ctx context.Context, collection string, word model.Word) (*mo
 	}
 
 	return &card, nil
+}
+
+func (r *Card) buildPartitionKey(word string) string {
+	return strings.ToLower(word)
 }

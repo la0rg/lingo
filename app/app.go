@@ -14,18 +14,18 @@ import (
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/sashabaranov/go-openai"
 
 	"github.com/la0rg/lingo/cardgen"
 	"github.com/la0rg/lingo/client"
 	"github.com/la0rg/lingo/config"
 	"github.com/la0rg/lingo/handler"
-	"github.com/la0rg/lingo/mock"
 	"github.com/la0rg/lingo/repository"
 	"github.com/la0rg/lingo/service"
 )
 
 func Run(ctx context.Context, conf *config.Config) error {
-	gpt := gpt()
+	gpt := gpt(conf)
 
 	dbConfig, err := dbConfig(ctx, conf)
 	if err != nil {
@@ -67,9 +67,9 @@ func Run(ctx context.Context, conf *config.Config) error {
 	return nil
 }
 
-func gpt() cardgen.GPTClient {
-	// return openai.NewClient(conf.OpenAIKey)
-	return mock.GPTClient{}
+func gpt(conf *config.Config) cardgen.GPTClient {
+	return openai.NewClient(conf.OpenAIKey)
+	// return mock.GPTClient{}
 }
 
 func dbConfig(ctx context.Context, conf *config.Config) (aws.Config, error) {
