@@ -14,7 +14,6 @@ var ErrCollectionNotFound = fmt.Errorf("collection not found")
 func (h *handlers) Card(w http.ResponseWriter, r *http.Request) error {
 	collectionName := strings.ToLower(chi.URLParam(r, "collection"))
 
-	// TODO: replace with collection db lookup
 	collection, ok := model.Collections[collectionName]
 	if !ok {
 		return ErrCollectionNotFound

@@ -23,6 +23,10 @@ func (h *handlers) APKG(w http.ResponseWriter, r *http.Request) error {
 		return BadRequest("invalid request format")
 	}
 
+	if len(request.Words) == 0 {
+		return BadRequest("no words provided")
+	}
+
 	url, err := h.apkg.CreateOnS3(r.Context(), collection, request.Words...)
 	if err != nil {
 		return err

@@ -11,7 +11,7 @@ type Config apkgdb.DeckConfig
 func DefaultConfig(id int64, name string) Config {
 	return Config{
 		ID:       id,
-		Mod:      time.Now().Unix(),
+		Mod:      time.Date(2024, 05, 15, 11, 10, 0, 0, time.UTC).Unix(),
 		Name:     name,
 		Usn:      1,
 		MaxTaken: 60,

@@ -7,30 +7,10 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-
 	"github.com/la0rg/lingo/apkg"
 	"github.com/la0rg/lingo/logger"
 	"github.com/la0rg/lingo/model"
 )
-
-var de_en_model = apkg.Model{
-	ID:   555555,
-	Name: "lingo_de_en",
-	Css:  `.word { \n\tfont-size: 28px; \nfont-style: italic; \n}`,
-	Templates: []apkg.Template{
-		{
-			Name: "lingo",
-			Qfmt: `<div class=word>{{word}}</div>`,
-			Afmt: `{{FrontSide}}\n\n<div class=word>{{translation}}</div>`,
-		},
-		{
-			Name: "lingo (reversed)",
-			Qfmt: `<div class=word>{{translation}}</div>`,
-			Afmt: `{{FrontSide}}\n\n<div class=word>{{word}}</div>`,
-		},
-	},
-	Fields: []string{"word", "translation"},
-}
 
 var apkgConfig = apkg.DefaultConfig(6493485093845, "lingo_config")
 
@@ -38,23 +18,55 @@ var ErrEmptyCards = fmt.Errorf("empty cards")
 
 type APKG struct {
 	generator CardGenerator
-	repo      APKGRepository
+	cardRepo  CardRepository
+	apkgRepo  APKGRepository
 }
 
-func NewAPKG(generator CardGenerator, repo APKGRepository) *APKG {
-	return &APKG{generator: generator, repo: repo}
+func NewAPKG(generator CardGenerator, apkgRepo APKGRepository, cardRepo CardRepository) *APKG {
+	return &APKG{generator: generator, apkgRepo: apkgRepo, cardRepo: cardRepo}
 }
 
 func (s *APKG) CreateOnS3(ctx context.Context, collection *model.Collection, words ...string) (string, error) {
 	logger := logger.WithContext(ctx).With("collection", collection.ID, "words", words)
 	logger.Info("Creating an APKG file")
 
-	cards, err := s.generator.Generate(ctx, collection, words...)
-	if err != nil {
-		return "", fmt.Errorf("unable to generate cards: %w", err)
+	var cards []model.Card
+	var wordsToGenerate []string
+	for _, word := range words {
+		card, err := s.cardRepo.Get(ctx, collection.ID, word)
+		if err != nil {
+			return "", err
+		}
+
+		if card == nil {
+			wordsToGenerate = append(wordsToGenerate, word)
+			continue
+		}
+
+		cards = append(cards, *card)
 	}
 
-	apkgCollection, err := s.buildAPKG(cards)
+	if len(wordsToGenerate) > 0 {
+		logger.Info("Generating new cards", "count", len(wordsToGenerate))
+
+		newCards, err := s.generator.Generate(ctx, collection, wordsToGenerate...)
+		if err != nil {
+			return "", fmt.Errorf("unable to generate cards: %w", err)
+		}
+
+		cards = append(cards, newCards...)
+
+		go func() {
+			ctx := context.WithoutCancel(ctx)
+			for _, card := range newCards {
+				if err := s.cardRepo.Put(ctx, card); err != nil {
+					logger.Error("Failed to store a card in DB", "error", err)
+				}
+			}
+		}()
+	}
+
+	apkgCollection, err := s.buildAPKG(collection, cards)
 	if err != nil {
 		return "", fmt.Errorf("unable to create APKG collection: %w", err)
 	}
@@ -64,7 +76,7 @@ func (s *APKG) CreateOnS3(ctx context.Context, collection *model.Collection, wor
 		return "", fmt.Errorf("unable to build APKG file: %w", err)
 	}
 
-	url, err := s.repo.StoreAndGetURL(ctx, s.s3Key(collection), archive)
+	url, err := s.apkgRepo.StoreAndGetURL(ctx, s.s3Key(collection), archive)
 	if err != nil {
 		return "", fmt.Errorf("unable to save APKG file to S3: %w", err)
 	}
@@ -72,13 +84,12 @@ func (s *APKG) CreateOnS3(ctx context.Context, collection *model.Collection, wor
 	return url, nil
 }
 
-func (s *APKG) buildAPKG(cards []model.Card) (*apkg.Collection, error) {
+func (s *APKG) buildAPKG(collection *model.Collection, cards []model.Card) (*apkg.Collection, error) {
 	if cards == nil || len(cards) == 0 {
 		return nil, ErrEmptyCards
 	}
 
 	notes := make([]apkg.Note, 0)
-	id := time.Now().UnixMilli()
 
 	for _, card := range cards {
 		translations := make([]string, 0)
@@ -87,18 +98,16 @@ func (s *APKG) buildAPKG(cards []model.Card) (*apkg.Collection, error) {
 		}
 
 		notes = append(notes, apkg.Note{
-			ID:     id, // TODO: save ID in DB
-			Model:  de_en_model,
+			ID:     card.ID,
+			Model:  collection.Template,
 			Fields: []string{card.Word, strings.Join(translations, ", ")},
 		})
-
-		id++
 	}
 
 	return &apkg.Collection{
 		Decks: []apkg.Deck{{
-			ID:     58098085085,
-			Name:   "lingo_de_en",
+			ID:     collection.ID,
+			Name:   collection.Name,
 			Config: apkgConfig,
 			Notes:  notes,
 		}},
@@ -106,5 +115,8 @@ func (s *APKG) buildAPKG(cards []model.Card) (*apkg.Collection, error) {
 }
 
 func (s *APKG) s3Key(collection *model.Collection) string {
-	return fmt.Sprintf("apkg/%s/lingo_%s.apkg", uuid.New().String(), collection.ID)
+	return fmt.Sprintf(
+		"apkg/%d/lingo_%d_%s.apkg",
+		collection.ID, time.Now().Unix(), uuid.New().String(),
+	)
 }

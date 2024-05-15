@@ -17,14 +17,14 @@ var cardsTableSchema = &dynamodb.CreateTableInput{
 		AttributeName: aws.String("key"),
 		AttributeType: types.ScalarAttributeTypeS,
 	}, {
-		AttributeName: aws.String("collection"),
-		AttributeType: types.ScalarAttributeTypeS,
+		AttributeName: aws.String("collection_id"),
+		AttributeType: types.ScalarAttributeTypeN,
 	}},
 	KeySchema: []types.KeySchemaElement{{
 		AttributeName: aws.String("key"),
 		KeyType:       types.KeyTypeHash,
 	}, {
-		AttributeName: aws.String("collection"),
+		AttributeName: aws.String("collection_id"),
 		KeyType:       types.KeyTypeRange,
 	}},
 	TableName: aws.String("cards"),

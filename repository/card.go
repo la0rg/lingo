@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
@@ -21,7 +22,7 @@ type Card struct {
 func NewCard(client *dynamodb.Client) *Card {
 	return &Card{
 		partitionKey: "key",
-		sortKey:      "collection",
+		sortKey:      "collection_id",
 		client:       client,
 	}
 }
@@ -45,10 +46,10 @@ func (r *Card) Put(ctx context.Context, card model.Card) error {
 	return nil
 }
 
-func (r *Card) Get(ctx context.Context, collection string, word string) (*model.Card, error) {
+func (r *Card) Get(ctx context.Context, collection int64, word string) (*model.Card, error) {
 	key := map[string]types.AttributeValue{
 		r.partitionKey: &types.AttributeValueMemberS{Value: r.buildPartitionKey(word)},
-		r.sortKey:      &types.AttributeValueMemberS{Value: collection},
+		r.sortKey:      &types.AttributeValueMemberN{Value: strconv.FormatInt(collection, 10)},
 	}
 
 	response, err := r.client.GetItem(ctx, &dynamodb.GetItemInput{

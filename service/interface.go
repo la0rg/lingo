@@ -12,7 +12,7 @@ type CardGenerator interface {
 
 type CardRepository interface {
 	Put(ctx context.Context, card model.Card) error
-	Get(ctx context.Context, collection string, word string) (*model.Card, error)
+	Get(ctx context.Context, collection int64, word string) (*model.Card, error)
 }
 
 type APKGRepository interface {

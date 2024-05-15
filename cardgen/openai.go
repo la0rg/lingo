@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/sashabaranov/go-openai"
 
@@ -75,8 +76,10 @@ func (g OpenAI) Generate(ctx context.Context, collection *model.Collection, word
 	}
 
 	// TODO: Should it be here?
+	id := time.Now().UnixMilli()
 	for i := range res.Cards {
-		res.Cards[i].Collection = collection.ID
+		res.Cards[i].ID = id + int64(i)
+		res.Cards[i].CollectionID = collection.ID
 	}
 
 	return res.Cards, nil
