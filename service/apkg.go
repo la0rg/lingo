@@ -98,9 +98,18 @@ func (s *APKG) buildAPKG(collection *model.Collection, cards []model.Card) (*apk
 		}
 
 		notes = append(notes, apkg.Note{
-			ID:     card.ID,
-			Model:  collection.Template,
-			Fields: []string{card.Word, strings.Join(translations, ", ")},
+			ID:    card.ID,
+			Model: collection.Template,
+			Fields: []string{
+				card.Word,
+				card.Article,
+				card.Transcription,
+				card.Plural,
+				strings.Join(translations, ", "),
+				card.Context,
+				card.ContextTranslation,
+				card.Definition,
+			},
 		})
 	}
 

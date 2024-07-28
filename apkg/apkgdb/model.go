@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 )
 
@@ -124,6 +125,10 @@ type Field struct {
 type UnescapedString string
 
 func (s UnescapedString) MarshalJSON() ([]byte, error) {
+	// remove newlines as they are not allowed in JSON strings
+	s = UnescapedString(strings.ReplaceAll(string(s), "\n", ""))
+	s = UnescapedString(strings.ReplaceAll(string(s), "\t", ""))
+
 	return []byte(fmt.Sprintf(`"%s"`, s)), nil
 }
 
