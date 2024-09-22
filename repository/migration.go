@@ -27,7 +27,7 @@ var cardsTableSchema = &dynamodb.CreateTableInput{
 		AttributeName: aws.String("collection_id"),
 		KeyType:       types.KeyTypeRange,
 	}},
-	TableName: aws.String("cards"),
+	TableName: aws.String("lingo_cards"),
 	ProvisionedThroughput: &types.ProvisionedThroughput{
 		ReadCapacityUnits:  aws.Int64(25),
 		WriteCapacityUnits: aws.Int64(25),
