@@ -9,6 +9,7 @@ import (
 	v4 "github.com/aws/aws-sdk-go-v2/aws/signer/v4"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/la0rg/lingo/config"
 )
 
 type S3Client interface {
@@ -17,16 +18,17 @@ type S3Client interface {
 }
 
 type APKG struct {
-	s3 S3Client
+	s3   S3Client
+	conf *config.Config
 }
 
-func NewAPKG(s3 S3Client) *APKG {
-	return &APKG{s3: s3}
+func NewAPKG(s3 S3Client, conf *config.Config) *APKG {
+	return &APKG{s3: s3, conf: conf}
 }
 
 func (r *APKG) StoreAndGetURL(ctx context.Context, key string, archive []byte) (string, error) {
 	_, err := r.s3.PutObject(ctx, &s3.PutObjectInput{
-		Bucket: aws.String("lingo"),
+		Bucket: aws.String(r.conf.S3.Bucket),
 		Key:    aws.String(key),
 		Body:   bytes.NewReader(archive),
 	})
@@ -37,7 +39,7 @@ func (r *APKG) StoreAndGetURL(ctx context.Context, key string, archive []byte) (
 	presignedResponse, err := r.s3.PresignGetObject(
 		ctx,
 		&s3.GetObjectInput{
-			Bucket: aws.String("lingo"),
+			Bucket: aws.String(r.conf.S3.Bucket),
 			Key:    aws.String(key),
 		},
 		func(opts *s3.PresignOptions) {

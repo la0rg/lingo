@@ -15,7 +15,12 @@ type Config struct {
 	OpenAIKey string
 	APIKeys   []string
 	Dynamo    AWS
-	S3        AWS
+	S3        S3
+}
+
+type S3 struct {
+	AWS    `mapstructure:",squash"`
+	Bucket string
 }
 
 type AWS struct {
@@ -71,11 +76,18 @@ func getAllKeys(t reflect.Type) []string {
 
 	for i := 0; i < t.NumField(); i++ {
 		f := t.Field(i)
+
 		name := strings.ToLower(f.Name)
+		squashParentName := strings.Contains(f.Tag.Get("mapstructure"), "squash")
 
 		if f.Type.Kind() == reflect.Struct {
 			subKeys := getAllKeys(f.Type)
 			for _, key := range subKeys {
+				if squashParentName {
+					result = append(result, key)
+					continue
+				}
+
 				result = append(result, fmt.Sprintf("%s.%s", name, key))
 			}
 

@@ -53,7 +53,7 @@ func Run(ctx context.Context, conf *config.Config) error {
 	}
 
 	cardRepo := repository.NewCard(db)
-	apkgRepo := repository.NewAPKG(s3)
+	apkgRepo := repository.NewAPKG(s3, conf)
 	cardService := service.NewCard(generator, cardRepo)
 	apkgService := service.NewAPKG(generator, apkgRepo, cardRepo)
 
@@ -82,7 +82,7 @@ func dbConfig(ctx context.Context, conf *config.Config) (aws.Config, error) {
 }
 
 func s3Config(ctx context.Context, conf *config.Config) (aws.Config, error) {
-	awsConfig, err := awsconfig.LoadDefaultConfig(ctx, awsOpts(conf.S3)...)
+	awsConfig, err := awsconfig.LoadDefaultConfig(ctx, awsOpts(conf.S3.AWS)...)
 	if err != nil {
 		return awsConfig, fmt.Errorf("unable to load AWS config: %v", err)
 	}
