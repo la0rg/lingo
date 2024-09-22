@@ -14,3 +14,15 @@ services:
     container_name: dynamodb
     ports:
       - "8000:8000"
+
+  lingo:
+    build: .
+    ports:
+      - "8080:8080"
+    volumes:
+      - type: bind
+        source: ./config.docker.yaml
+        target: /app/config.yaml
+    depends_on:
+      - minio
+      - dynamodb

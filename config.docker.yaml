@@ -1,0 +1,16 @@
+loglevel: "DEBUG"
+apikeys:
+  - "0c80d8c3-889c-441c-b792-50ae271a4348"
+  - "9d8bffd0-2e98-4d0d-959a-f72ce1a97d39"
+
+dynamo:
+  endpoint: "http://dynamodb:8000"
+  region: "us-east-1"
+  key: "dynamodb"
+  secret: "dynamodb"
+
+s3:
+  endpoint: "http://minio:9000"
+  region: "us-east-1"
+  key: "minioadmin"
+  secret: "minioadmin"

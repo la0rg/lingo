@@ -10,11 +10,19 @@ import (
 )
 
 type Config struct {
-	Local     bool     `mapstructure:"local"`
-	LogLevel  string   `mapstructure:"log_level"`
-	Port      int      `mapstructure:"port"`
-	OpenAIKey string   `mapstructure:"openai_key"`
-	APIKeys   []string `mapstructure:"api_keys"`
+	LogLevel  string
+	Port      int
+	OpenAIKey string
+	APIKeys   []string
+	Dynamo    AWS
+	S3        AWS
+}
+
+type AWS struct {
+	Region   string
+	Endpoint string
+	Key      string
+	Secret   string
 }
 
 func Load() (*Config, error) {
@@ -45,15 +53,37 @@ func Load() (*Config, error) {
 }
 
 func bindEnvs() error {
-	r := reflect.TypeOf(Config{})
-	for i := 0; i < r.NumField(); i++ {
-		f := r.Field(i)
-		tag := f.Tag.Get("mapstructure")
+	configType := reflect.TypeOf(Config{})
+	keys := getAllKeys(configType)
 
-		if err := viper.BindEnv(tag, strings.ToUpper(tag)); err != nil {
+	for _, key := range keys {
+		envKey := strings.ToUpper(strings.ReplaceAll(key, ".", "_"))
+		if err := viper.BindEnv(key, envKey); err != nil {
 			return err
 		}
 	}
 
 	return nil
+}
+
+func getAllKeys(t reflect.Type) []string {
+	var result []string
+
+	for i := 0; i < t.NumField(); i++ {
+		f := t.Field(i)
+		name := strings.ToLower(f.Name)
+
+		if f.Type.Kind() == reflect.Struct {
+			subKeys := getAllKeys(f.Type)
+			for _, key := range subKeys {
+				result = append(result, fmt.Sprintf("%s.%s", name, key))
+			}
+
+			continue
+		}
+
+		result = append(result, name)
+	}
+
+	return result
 }
