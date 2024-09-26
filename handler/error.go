@@ -55,7 +55,7 @@ func ErrorHandler(h HandlerFunc) http.HandlerFunc {
 		}
 
 		httpErr := mapError(r.Context(), err)
-		logger.WithContext(r.Context()).Info("request failed", "error", err)
+		logger.WithContext(r.Context()).Info("request failed", "error", err, "code", httpErr.Code)
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(httpErr.Code)

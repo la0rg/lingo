@@ -22,6 +22,7 @@ import (
 	"github.com/la0rg/lingo/handler"
 	"github.com/la0rg/lingo/repository"
 	"github.com/la0rg/lingo/service"
+	"github.com/la0rg/lingo/web"
 )
 
 func Run(ctx context.Context, conf *config.Config) error {
@@ -52,12 +53,17 @@ func Run(ctx context.Context, conf *config.Config) error {
 		return err
 	}
 
+	templates, err := web.NewTemplates()
+	if err != nil {
+		return err
+	}
+
 	cardRepo := repository.NewCard(db)
 	apkgRepo := repository.NewAPKG(s3, conf)
 	cardService := service.NewCard(generator, cardRepo)
 	apkgService := service.NewAPKG(generator, apkgRepo, cardRepo)
 
-	router := handler.NewRouter(conf, cardService, apkgService)
+	router := handler.NewRouter(conf, cardService, apkgService, templates)
 
 	if err := startHTTPServer(conf, router); err != nil {
 		return err
