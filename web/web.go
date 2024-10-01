@@ -7,8 +7,11 @@ import (
 	"text/template"
 )
 
-//go:embed assets/*
+//go:embed templates/*
 var templateFS embed.FS
+
+//go:embed css/styles.css
+var cssFS embed.FS
 
 type TemplateName string
 
@@ -21,7 +24,7 @@ type Templates struct {
 }
 
 func NewTemplates() (*Templates, error) {
-	templates, err := template.ParseFS(templateFS, "assets/*.html")
+	templates, err := template.ParseFS(templateFS, "templates/*.html")
 	if err != nil {
 		return nil, fmt.Errorf("unable to parse html templates: %v", err)
 	}
@@ -37,4 +40,13 @@ func (t *Templates) Render(name TemplateName, data any) ([]byte, error) {
 	}
 
 	return buf.Bytes(), nil
+}
+
+func Styles() ([]byte, error) {
+	body, err := cssFS.ReadFile("css/styles.css")
+	if err != nil {
+		return nil, fmt.Errorf("failed to read styles.css: %v", err)
+	}
+
+	return body, nil
 }

@@ -51,6 +51,7 @@ func NewRouter(
 	})
 
 	r.Get("/", ErrorHandler(handlers.Index))
+	r.Get("/styles.css", ErrorHandler(handlers.Styles))
 
 	return r
 }
