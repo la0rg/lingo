@@ -10,7 +10,7 @@ css:
 
 css-watch:
 	npx tailwindcss -c web/tailwind.config.js -i web/src/css/input.css \
-	-o web/dist/styles.css --minify --watch
+	-o web/dist/styles.css --watch
 
 air:
-	air --build.cmd "go build -o .bin/lingo cmd/server/main.go" --build.bin ".bin/lingo"
+	air
