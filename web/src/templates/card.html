@@ -1,0 +1,11 @@
+<div id="card_body" class="p-8 htmx-content fade-me-in">
+  <div class="anki-word de-article-{{ .Article }}">
+    {{ .Article }} {{ .Word }}
+  </div>
+  <div class="anki-transc">[{{ .Transcription }}]</div>
+  <div class="anki-mid">{{ .Context }}</div>
+  <div class="anki-small">{{ .Definition }}</div>
+  <hr id="answer" class="my-4" />
+  <div class="anki-transl">{{ .AllTranslations }}</div>
+  <div class="anki-mid">{{ .ContextTranslation }}</div>
+</div>

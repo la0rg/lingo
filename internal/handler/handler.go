@@ -44,13 +44,14 @@ func NewRouter(
 	r.Use(RequestLogger)
 	r.Use(Recoverer)
 
-	r.Route("/collections/{collection}", func(r chi.Router) {
+	r.Route("/api/collections/{collection}", func(r chi.Router) {
 		r.Use(APIKey(conf))
 		r.Get("/cards/{word}", ErrorHandler(handlers.Card))
 		r.Post("/apkg", ErrorHandler(handlers.APKG))
 	})
 
 	r.Get("/", ErrorHandler(handlers.Index))
+	r.Get("/card", ErrorHandler(handlers.CardPreview))
 	r.Get("/styles.css", ErrorHandler(handlers.Styles))
 
 	return r

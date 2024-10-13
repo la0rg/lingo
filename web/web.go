@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"embed"
 	"fmt"
-	"text/template"
+	"html/template"
 )
 
 //go:embed src/templates/*
@@ -16,7 +16,8 @@ var Styles []byte
 type TemplateName string
 
 const (
-	Index TemplateName = "index.html"
+	Index       TemplateName = "index.html"
+	CardPreview TemplateName = "card.html"
 )
 
 type Templates struct {

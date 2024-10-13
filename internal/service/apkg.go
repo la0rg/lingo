@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -92,11 +91,6 @@ func (s *APKG) buildAPKG(collection *model.Collection, cards []model.Card) (*apk
 	notes := make([]apkg.Note, 0)
 
 	for _, card := range cards {
-		translations := make([]string, 0)
-		for _, translation := range card.Translations {
-			translations = append(translations, translation.Translations...)
-		}
-
 		notes = append(notes, apkg.Note{
 			ID:    card.ID,
 			Model: collection.Template,
@@ -105,7 +99,7 @@ func (s *APKG) buildAPKG(collection *model.Collection, cards []model.Card) (*apk
 				card.Article,
 				card.Transcription,
 				card.Plural,
-				strings.Join(translations, ", "),
+				card.AllTranslations(),
 				card.Context,
 				card.ContextTranslation,
 				card.Definition,

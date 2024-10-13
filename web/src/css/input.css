@@ -49,3 +49,27 @@
 .anki-word.de-article-das {
   color: #34875d;
 }
+
+.htmx-indicator {
+  display: none;
+}
+.htmx-request .htmx-indicator {
+  display: flex;
+}
+.htmx-request.htmx-indicator {
+  display: flex;
+}
+.htmx-request .htmx-content {
+  display: none;
+}
+.htmx-request.htmx-content {
+  display: none;
+}
+
+.fade-me-in.htmx-added {
+  opacity: 0;
+}
+.fade-me-in {
+  opacity: 1;
+  transition: opacity 1s ease-out;
+}

@@ -1,5 +1,7 @@
 package model
 
+import "strings"
+
 type Card struct {
 	ID                 int64         `json:"-" dynamodbav:"id"`
 	Word               string        `json:"word" dynamodbav:"word"`
@@ -11,6 +13,14 @@ type Card struct {
 	Context            string        `json:"context" dynamodbav:"context,omitempty"`
 	ContextTranslation string        `json:"context_translation" dynamodbav:"context_translation,omitempty"`
 	Definition         string        `json:"definition" dynamodbav:"definition,omitempty"`
+}
+
+func (c Card) AllTranslations() string {
+	translations := make([]string, 0)
+	for _, translation := range c.Translations {
+		translations = append(translations, translation.Translations...)
+	}
+	return strings.Join(translations, ", ")
 }
 
 type Translation struct {
