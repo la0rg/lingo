@@ -51,6 +51,7 @@ func RequestLogger(h http.Handler) http.Handler {
 				"bytes", ww.BytesWritten(),
 				"headers", ww.Header(),
 				"latency", time.Since(t1).Milliseconds(),
+				"url", r.URL.String(),
 			)
 		}()
 

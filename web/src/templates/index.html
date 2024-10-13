@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lingo - AI-Powered Flashcards for Anki</title>
     <script src="https://unpkg.com/htmx.org"></script>
+    <script src="/public/js/language_selector.js"></script>
     <link rel="stylesheet" href="/styles.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -21,28 +22,7 @@
             </div>
 
             <div class="navbar-center">
-                <ul class="menu menu-horizontal bg-base-200 rounded-btn">
-                    <li>
-                        <details>
-                            <summary><span class="fi fi-us"></span></summary>
-                            <ul>
-                                <li><a class="active"><span class="fi fi-us"></span>English</a></li>
-                                <li><a><span class="fi fi-ru"></span>Russian</a></li>
-                                <li><a><span class="fi fi-de"></span>German</a></li>
-                            </ul>
-                        </details>
-                    </li>
-                    <li>
-                        <details>
-                            <summary><span class="fi fi-de"></span></summary>
-                            <ul>
-                                <li><a><span class="fi fi-us"></span>English</a></li>
-                                <li><a><span class="fi fi-ru"></span>Russian</a></li>
-                                <li><a class="active"><span class="fi fi-de"></span>German</a></li>
-                            </ul>
-                        </details>
-                    </li>
-                </ul>
+                {{ template "language_selector.html" .Languages }}
             </div>
 
             <div class="navbar-end space-x-6">
@@ -126,7 +106,7 @@
                             />
                         </div>
                         <div id="card" class="flex items-center justify-center card anki-card bg-base-100 w-full min-h-80">
-                            {{ template "card.html" . }}
+                            {{ template "card.html" .Card }}
                             <div class="flex items-center justify-center h-64 htmx-indicator">
                                 <span class="loading loading-ring loading-lg"></span>
                             </div>

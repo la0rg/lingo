@@ -13,11 +13,15 @@ var templateFS embed.FS
 //go:embed dist/styles.css
 var Styles []byte
 
+//go:embed public/*
+var PublicFS embed.FS
+
 type TemplateName string
 
 const (
-	Index       TemplateName = "index.html"
-	CardPreview TemplateName = "card.html"
+	Index            TemplateName = "index.html"
+	CardPreview      TemplateName = "card.html"
+	LanguageSelector TemplateName = "language_selector.html"
 )
 
 type Templates struct {

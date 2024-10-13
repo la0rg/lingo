@@ -18,5 +18,12 @@ func (h *handlers) Index(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	return h.HTML(w, r, web.Index, card)
+	data := struct {
+		Languages model.LanguageSelector
+		Card      *model.Card
+	}{
+		Languages: model.Languages,
+		Card:      card,
+	}
+	return h.HTML(w, r, web.Index, data)
 }

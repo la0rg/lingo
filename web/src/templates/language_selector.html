@@ -1,0 +1,60 @@
+<form id="language-selector" class="z-10">
+    <ul class="menu menu-horizontal bg-base-200 rounded-btn">
+        <li>
+            <details id="source-language">
+            {{ range .Source }}
+                {{ if .Active }}
+                <summary>
+                    <input type="hidden" name="sourceActive" value="{{ .CountryCode }}">
+                    <span class="fi fi-{{ .Flag }}"></span>
+                </summary>
+                {{ end }}
+            {{ end }}
+            <ul>
+                {{ range .Source }}
+                <li>
+                <button 
+                    type="submit" 
+                    {{ if .Active }}class="active cursor-pointer"{{ end }}
+                    hx-post="/language"
+                    hx-target="#language-selector"
+                    hx-swap="outerHTML"
+                    hx-vals='{"sourceNew": "{{ .CountryCode }}"}'
+                    >
+                    <span class="fi fi-{{ .Flag }}"></span>{{ .Name }}
+                </button>
+                </li>
+                {{ end }}
+            </ul>
+            </details>
+        </li>
+        <li>
+            <details id="target-language">
+                {{ range .Target }}
+                {{ if .Active }}
+                <summary>
+                    <input type="hidden" name="targetActive" value="{{ .CountryCode }}">
+                    <span class="fi fi-{{ .Flag }}"></span>
+                </summary>
+                {{ end }}
+                {{ end }}
+                <ul>
+                {{ range .Target }}
+                <li>
+                    <button 
+                    type="submit" 
+                    {{ if .Active }}class="active cursor-pointer"{{ end }}
+                    hx-post="/language"
+                    hx-target="#language-selector"
+                    hx-swap="outerHTML"
+                    hx-vals='{"targetNew": "{{ .CountryCode }}"}'
+                    >
+                    <span class="fi fi-{{ .Flag }}"></span>{{ .Name }}
+                </button>
+                </li>
+                {{ end }}
+                </ul>
+            </details>
+        </li>
+    </ul>
+</form>

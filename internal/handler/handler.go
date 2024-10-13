@@ -37,6 +37,7 @@ func NewRouter(
 	tmpl TemplateRenderer,
 ) http.Handler {
 	handlers := handlers{conf: conf, card: card, apkg: apkg, tmpl: tmpl}
+	publicHandler := http.FileServer(http.FS(web.PublicFS))
 
 	r := chi.NewRouter()
 
@@ -50,9 +51,11 @@ func NewRouter(
 		r.Post("/apkg", ErrorHandler(handlers.APKG))
 	})
 
-	r.Get("/", ErrorHandler(handlers.Index))
 	r.Get("/card", ErrorHandler(handlers.CardPreview))
+	r.Post("/language", ErrorHandler(handlers.Language))
 	r.Get("/styles.css", ErrorHandler(handlers.Styles))
+	r.Get("/public/*", publicHandler.ServeHTTP)
+	r.Get("/", ErrorHandler(handlers.Index))
 
 	return r
 }
