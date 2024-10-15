@@ -22,7 +22,7 @@ func (h *handlers) Index(w http.ResponseWriter, r *http.Request) error {
 		Languages model.LanguageSelector
 		Card      *model.Card
 	}{
-		Languages: model.Languages,
+		Languages: model.DefaultLanguageSelector,
 		Card:      card,
 	}
 	return h.HTML(w, r, web.Index, data)

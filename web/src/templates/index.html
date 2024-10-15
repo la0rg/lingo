@@ -97,13 +97,16 @@
                                 class="input input-bordered w-full" 
                                 value="Bad" placeholder="Enter a word"
                                 name="word"
-                                hx-get="/card",
+                                hx-get="/card"
                                 hx-indicator="#card" 
                                 hx-trigger="input changed delay:2000ms"
                                 hx-target="#card_body"
                                 hx-swap="outerHTML"
                                 autofocus
                             />
+                            <div class="label">
+                                <span class="label-text-alt">Enter a word that you want to learn</span>
+                            </div>
                         </div>
                         <div id="card" class="flex items-center justify-center card anki-card bg-base-100 w-full min-h-80">
                             {{ template "card.html" .Card }}
