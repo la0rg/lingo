@@ -1601,6 +1601,13 @@ html {
   transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
 }
 
+.label-text {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  --tw-text-opacity: 1;
+  color: var(--fallback-bc,oklch(var(--bc)/var(--tw-text-opacity)));
+}
+
 .label-text-alt {
   font-size: 0.75rem;
   line-height: 1rem;
@@ -2108,6 +2115,10 @@ html {
   margin-top: 1.5rem;
 }
 
+.mb-2 {
+  margin-bottom: 0.5rem;
+}
+
 .flex {
   display: flex;
 }
@@ -2241,6 +2252,18 @@ html {
 
 .fill-slate-400 {
   fill: #94a3b8;
+}
+
+.fill-primary {
+  fill: var(--fallback-p,oklch(var(--p)/1));
+}
+
+.fill-white {
+  fill: #fff;
+}
+
+.fill-red-950 {
+  fill: #450a0a;
 }
 
 .p-4 {
