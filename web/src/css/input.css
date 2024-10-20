@@ -2,6 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ANKI card classes */
+
 .anki-card {
   font-family: Arial, sans-serif;
   text-align: center;
@@ -50,6 +52,7 @@
   color: #34875d;
 }
 
+/* In progress request indicator */
 .htmx-indicator {
   display: none;
 }
@@ -66,7 +69,11 @@
   display: none;
 }
 
-.fade-me-in.htmx-added {
+/* Fade in effect for the new content */
+.htmx-added .fade-me-in {
+  opacity: 0;
+}
+.htmx-added.fade-me-in {
   opacity: 0;
 }
 .fade-me-in {

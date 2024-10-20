@@ -51,11 +51,11 @@ func NewRouter(
 		r.Post("/apkg", ErrorHandler(handlers.APKG))
 	})
 
-	r.Get("/card", ErrorHandler(handlers.CardPreview))
-	r.Post("/language", ErrorHandler(handlers.Language))
-	r.Get("/styles.css", ErrorHandler(handlers.Styles))
+	r.Get("/card", handlers.ErrorHandlerHTML(handlers.CardPreview))
+	r.Post("/language", handlers.ErrorHandlerHTML(handlers.Language))
+	r.Get("/styles.css", handlers.ErrorHandlerHTML(handlers.Styles))
 	r.Get("/public/*", publicHandler.ServeHTTP)
-	r.Get("/", ErrorHandler(handlers.Index))
+	r.Get("/", handlers.ErrorHandlerHTML(handlers.Index))
 
 	return r
 }

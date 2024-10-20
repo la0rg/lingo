@@ -22,6 +22,7 @@ const (
 	Index            TemplateName = "index.html"
 	CardPreview      TemplateName = "card.html"
 	LanguageSelector TemplateName = "language_selector.html"
+	Error            TemplateName = "error.html"
 )
 
 type Templates struct {

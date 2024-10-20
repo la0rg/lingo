@@ -6,12 +6,6 @@ var languages = []Language{
 	{CountryCode: "ru", Flag: "ru", Name: "Russian"},
 }
 
-var DefaultLanguageSelector = LanguageSelector{
-	SourceCountryCode: "de",
-	TargetCountryCode: "en",
-	Languages:         languages,
-}
-
 type LanguageSelector struct {
 	SourceCountryCode string
 	TargetCountryCode string
@@ -24,9 +18,17 @@ type Language struct {
 	Name        string
 }
 
+func NewLanguageSelector(source, target string) LanguageSelector {
+	return LanguageSelector{
+		SourceCountryCode: source,
+		TargetCountryCode: target,
+		Languages:         languages,
+	}
+}
+
 func UpdateLanguageSelector(sourceActive, targetActive, sourceNew, targetNew string) LanguageSelector {
 	if targetNew == sourceActive || sourceNew == targetActive {
-		// swap source and target; do not allow the same language for source and target
+		// swap source and target (don't allow the same language for source and target)
 		return LanguageSelector{
 			SourceCountryCode: targetActive,
 			TargetCountryCode: sourceActive,

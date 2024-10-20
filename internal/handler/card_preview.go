@@ -8,15 +8,19 @@ import (
 )
 
 func (h *handlers) CardPreview(w http.ResponseWriter, r *http.Request) error {
-	// TODO: get collection from request
-	collection, ok := model.Collections["de-en"]
+	source, target := r.URL.Query().Get("source"), r.URL.Query().Get("target")
+	if source == "" || target == "" {
+		return ErrInvalidLanguage
+	}
+
+	collection, ok := model.Collections[model.CollectionSlug(source, target)]
 	if !ok {
 		return ErrCollectionNotFound
 	}
 
 	word := r.URL.Query().Get("word")
 	if word == "" {
-		return BadRequest("empty word")
+		return ErrEmptyWord
 	}
 
 	card, err := h.card.Get(r.Context(), collection, word)

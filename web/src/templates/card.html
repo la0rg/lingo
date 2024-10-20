@@ -1,11 +1,22 @@
-<div id="card_body" class="p-8 htmx-content fade-me-in">
-  <div class="anki-word de-article-{{ .Article }}">
-    {{ .Article }} {{ .Word }}
+<div id="card" class="space-y-4">
+  <div id="card-error"></div>
+  <div 
+    id="card-body"
+    class="card flex items-center justify-center anki-card bg-base-100 w-full min-h-80"
+  >
+    <div class="p-8 htmx-content fade-me-in">
+      <div class="anki-word {{ if .Article }}de-article-{{ .Article }}{{ end }}">
+        {{ .Article }} {{ .Word }}
+      </div>
+      {{ if .Transcription }}<div class="anki-transc">[{{ .Transcription }}]</div>{{ end }}
+      {{ if .Context }}<div class="anki-mid">{{ .Context }}</div>{{ end }}
+      {{ if .Definition }}<div class="anki-small">{{ .Definition }}</div>{{ end}}
+      <hr id="answer" class="my-4" />
+      <div class="anki-transl">{{ .AllTranslations }}</div>
+      {{if .ContextTranslation }}<div class="anki-mid">{{ .ContextTranslation }}</div>{{ end }}
+    </div>
+    <div class="flex items-center justify-center h-64 htmx-indicator">
+        <span class="loading loading-ring loading-lg"></span>
+    </div>
   </div>
-  <div class="anki-transc">[{{ .Transcription }}]</div>
-  <div class="anki-mid">{{ .Context }}</div>
-  <div class="anki-small">{{ .Definition }}</div>
-  <hr id="answer" class="my-4" />
-  <div class="anki-transl">{{ .AllTranslations }}</div>
-  <div class="anki-mid">{{ .ContextTranslation }}</div>
 </div>

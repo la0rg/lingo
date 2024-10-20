@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/la0rg/lingo/internal/model"
@@ -10,17 +9,17 @@ import (
 
 func (h *handlers) Language(w http.ResponseWriter, r *http.Request) error {
 	if err := r.ParseForm(); err != nil {
-		return fmt.Errorf("unable to parse language selector form: %v", err)
+		return BadRequest("Invalid request format")
 	}
 
-	sourceActive, targetActive := r.Form.Get("sourceActive"), r.Form.Get("targetActive")
-	if sourceActive == "" || targetActive == "" {
-		return BadRequest("language selector: source or target language is empty")
+	source, target := r.Form.Get("source"), r.Form.Get("target")
+	if source == "" || target == "" {
+		return ErrInvalidLanguage
 	}
 
 	sourceNew, targetNew := r.Form.Get("sourceNew"), r.Form.Get("targetNew")
 	languageSelector := model.UpdateLanguageSelector(
-		sourceActive, targetActive, sourceNew, targetNew,
+		source, target, sourceNew, targetNew,
 	)
 	return h.HTML(w, r, web.LanguageSelector, languageSelector)
 }

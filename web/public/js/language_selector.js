@@ -4,11 +4,13 @@ function closeOnClick(element) {
     });
 }
 
-function addEventListenerToLanguageSelector() {
-    closeOnClick(document.getElementById("source-language"));
-    closeOnClick(document.getElementById("target-language"));
+function addEventListenerToLanguageSelector(content) {
+    var langSelectors = content.querySelectorAll("#source-language, #target-language");
+    for (var i = 0; i < langSelectors.length; i++) {
+        closeOnClick(langSelectors[i]);
+    }
 }
 
-window.onload = function () {
-    addEventListenerToLanguageSelector();
-};
+htmx.onLoad(function (content) {
+    addEventListenerToLanguageSelector(content);
+});

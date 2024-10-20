@@ -1,15 +1,12 @@
 package handler
 
 import (
-	"fmt"
 	"net/http"
 	"strings"
 
 	"github.com/go-chi/chi"
 	"github.com/la0rg/lingo/internal/model"
 )
-
-var ErrCollectionNotFound = fmt.Errorf("collection not found")
 
 func (h *handlers) Card(w http.ResponseWriter, r *http.Request) error {
 	collectionName := strings.ToLower(chi.URLParam(r, "collection"))
@@ -21,7 +18,7 @@ func (h *handlers) Card(w http.ResponseWriter, r *http.Request) error {
 
 	word := strings.TrimSpace(chi.URLParam(r, "word"))
 	if len(word) == 0 {
-		return BadRequest("empty word")
+		return ErrEmptyWord
 	}
 
 	card, err := h.card.Get(r.Context(), collection, word)

@@ -6,7 +6,7 @@
             {{ if eq .CountryCode $.SourceCountryCode }}
             <summary>
                 Study:
-                <input type="hidden" name="sourceActive" value="{{ .CountryCode }}">
+                <input type="hidden" name="source" value="{{ .CountryCode }}">
                 <span class="fi fi-{{ .Flag }}"></span>
             </summary>
             {{ end }}
@@ -35,7 +35,7 @@
                 {{ if eq .CountryCode $.TargetCountryCode }}
                 <summary>
                     Native:
-                    <input type="hidden" name="targetActive" value="{{ .CountryCode }}">
+                    <input type="hidden" name="target" value="{{ .CountryCode }}">
                     <span class="fi fi-{{ .Flag }}"></span>
                 </summary>
                 {{ end }}

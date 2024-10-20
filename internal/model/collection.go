@@ -1,6 +1,8 @@
 package model
 
-import "github.com/la0rg/lingo/pkg/apkg"
+import (
+	"github.com/la0rg/lingo/pkg/apkg"
+)
 
 type Collection struct {
 	ID             int64
@@ -11,11 +13,15 @@ type Collection struct {
 	Template       apkg.Model
 }
 
+func CollectionSlug(source, target string) string {
+	return source + "-" + target
+}
+
 var Collections = map[string]*Collection{
-	"de-en": {
+	CollectionSlug("de", "en"): {
 		ID:             1715808757,
 		Name:           "Lingo DE-EN",
-		Slug:           "de-en",
+		Slug:           CollectionSlug("de", "en"),
 		SourceLanguage: "de",
 		TargetLanguage: "en",
 		Template: apkg.Model{
