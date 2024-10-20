@@ -1,9 +1,11 @@
 package handler
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/la0rg/lingo/internal/model"
+	"github.com/la0rg/lingo/internal/service"
 	"github.com/la0rg/lingo/web"
 )
 
@@ -24,6 +26,9 @@ func (h *handlers) CardPreview(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	card, err := h.card.Get(r.Context(), collection, word)
+	if errors.Is(err, service.ErrInvalidWord) {
+		return ErrInvalidWord
+	}
 	if err != nil {
 		return err
 	}

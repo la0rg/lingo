@@ -8,6 +8,8 @@ import (
 	"github.com/la0rg/lingo/internal/model"
 )
 
+var ErrInvalidWord = fmt.Errorf("card is not created: invalid word")
+
 type Card struct {
 	generator CardGenerator
 	repo      CardRepository
@@ -39,7 +41,8 @@ func (s *Card) Get(ctx context.Context, collection *model.Collection, word strin
 	}
 
 	if len(cards) < 1 {
-		return nil, fmt.Errorf("no cards generated")
+		logger.Info("card is not created")
+		return nil, ErrInvalidWord
 	}
 
 	if len(cards) > 1 {
