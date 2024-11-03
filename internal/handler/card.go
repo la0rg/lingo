@@ -11,7 +11,7 @@ import (
 func (h *handlers) Card(w http.ResponseWriter, r *http.Request) error {
 	collectionName := strings.ToLower(chi.URLParam(r, "collection"))
 
-	collection, ok := model.Collections[collectionName]
+	collection, ok := model.CollectionsMap[collectionName]
 	if !ok {
 		return ErrCollectionNotFound
 	}

@@ -25,7 +25,7 @@ func NewAPKG(generator CardGenerator, apkgRepo APKGRepository, cardRepo CardRepo
 	return &APKG{generator: generator, apkgRepo: apkgRepo, cardRepo: cardRepo}
 }
 
-func (s *APKG) CreateOnS3(ctx context.Context, collection *model.Collection, words ...string) (string, error) {
+func (s *APKG) CreateOnS3(ctx context.Context, collection *model.Collection, words ...string) (*model.CollectionFile, error) {
 	logger := logger.WithContext(ctx).With("collection", collection.ID, "words", words)
 	logger.Info("Creating an APKG file")
 
@@ -34,7 +34,7 @@ func (s *APKG) CreateOnS3(ctx context.Context, collection *model.Collection, wor
 	for _, word := range words {
 		card, err := s.cardRepo.Get(ctx, collection.ID, word)
 		if err != nil {
-			return "", err
+			return nil, err
 		}
 
 		if card == nil {
@@ -50,7 +50,7 @@ func (s *APKG) CreateOnS3(ctx context.Context, collection *model.Collection, wor
 
 		newCards, err := s.generator.Generate(ctx, collection, wordsToGenerate...)
 		if err != nil {
-			return "", fmt.Errorf("unable to generate cards: %w", err)
+			return nil, fmt.Errorf("unable to generate cards: %w", err)
 		}
 
 		cards = append(cards, newCards...)
@@ -67,20 +67,24 @@ func (s *APKG) CreateOnS3(ctx context.Context, collection *model.Collection, wor
 
 	apkgCollection, err := s.buildAPKG(collection, cards)
 	if err != nil {
-		return "", fmt.Errorf("unable to create APKG collection: %w", err)
+		return nil, fmt.Errorf("unable to create APKG collection: %w", err)
 	}
 
 	archive, err := apkg.Build(apkgCollection)
 	if err != nil {
-		return "", fmt.Errorf("unable to build APKG file: %w", err)
+		return nil, fmt.Errorf("unable to build APKG file: %w", err)
 	}
 
 	url, err := s.apkgRepo.StoreAndGetURL(ctx, s.s3Key(collection), archive)
 	if err != nil {
-		return "", fmt.Errorf("unable to save APKG file to S3: %w", err)
+		return nil, fmt.Errorf("unable to save APKG file to S3: %w", err)
 	}
 
-	return url, nil
+	return &model.CollectionFile{
+		URL:            url,
+		CardsCount:     len(cards),
+		CollectionName: collection.Name,
+	}, nil
 }
 
 func (s *APKG) buildAPKG(collection *model.Collection, cards []model.Card) (*apkg.Collection, error) {

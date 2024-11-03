@@ -19,11 +19,12 @@ var PublicFS embed.FS
 type TemplateName string
 
 const (
-	Index            TemplateName = "index.html"
-	Collection       TemplateName = "collection.html"
-	CardPreview      TemplateName = "card.html"
-	LanguageSelector TemplateName = "language_selector.html"
-	Error            TemplateName = "error.html"
+	Index              TemplateName = "index.html"
+	Collection         TemplateName = "collection.html"
+	CollectionDownload TemplateName = "collection_download.html"
+	CardPreview        TemplateName = "card.html"
+	LanguageSelector   TemplateName = "language_selector.html"
+	Error              TemplateName = "error.html"
 )
 
 type Templates struct {

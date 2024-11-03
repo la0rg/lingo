@@ -18,7 +18,7 @@ var (
 )
 
 func (h *handlers) Index(w http.ResponseWriter, r *http.Request) error {
-	collection, ok := model.Collections[defaultCollectionSlug]
+	collection, ok := model.CollectionsMap[defaultCollectionSlug]
 	if !ok {
 		return ErrCollectionNotFound
 	}

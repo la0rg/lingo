@@ -15,7 +15,7 @@ func (h *handlers) CardPreview(w http.ResponseWriter, r *http.Request) error {
 		return ErrInvalidLanguage
 	}
 
-	collection, ok := model.Collections[model.CollectionSlug(source, target)]
+	collection, ok := model.CollectionsMap[model.CollectionSlug(source, target)]
 	if !ok {
 		return ErrCollectionNotFound
 	}

@@ -1,0 +1,9 @@
+<div id="actions" class="card-actions justify-center htmx-content space-x-0 md:space-x-6">
+    <div class="indicator w-full md:w-56">
+        {{ if ne .CardsCount .RequestedCount }}
+        <span class="indicator-item badge badge-warning">{{ .CardsCount }}/{{ .RequestedCount }}</span>
+        {{ end }}
+        <a class="btn btn-success w-full md:w-56" href="{{ .URL }}" download>Download the APKG file</a>
+    </div> 
+    <a class="btn btn-outline btn-ghost w-full md:w-56" href="/collection">New collection</a>
+</div>

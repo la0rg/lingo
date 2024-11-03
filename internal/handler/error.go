@@ -11,7 +11,9 @@ import (
 
 var (
 	ErrCollectionNotFound = NotFound("The language selection is not supported")
-	ErrEmptyWord          = BadRequest("Invalid request: word is empty")
+	ErrEmptyWord          = BadRequest("Word is empty")
+	ErrEmptyWordList      = BadRequest("Word list is empty")
+	ErrNoValidWords       = BadRequest("The collection does not contain any valid words")
 	ErrInvalidWord        = BadRequest("Unable to create a card for this word")
 	ErrInvalidLanguage    = BadRequest("Invalid language selection")
 )

@@ -13,7 +13,7 @@ import (
 func (h *handlers) APKG(w http.ResponseWriter, r *http.Request) error {
 	collectionName := strings.ToLower(chi.URLParam(r, "collection"))
 
-	collection, ok := model.Collections[collectionName]
+	collection, ok := model.CollectionsMap[collectionName]
 	if !ok {
 		return ErrCollectionNotFound
 	}
@@ -27,11 +27,11 @@ func (h *handlers) APKG(w http.ResponseWriter, r *http.Request) error {
 		return BadRequest("no words provided")
 	}
 
-	url, err := h.apkg.CreateOnS3(r.Context(), collection, request.Words...)
+	file, err := h.apkg.CreateOnS3(r.Context(), collection, request.Words...)
 	if err != nil {
 		return err
 	}
 
-	JSON(w, r, model.APKGResponse{URL: url})
+	JSON(w, r, model.APKGResponse{URL: file.URL})
 	return nil
 }

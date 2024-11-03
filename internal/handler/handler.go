@@ -16,7 +16,7 @@ type CardService interface {
 }
 
 type APKGService interface {
-	CreateOnS3(ctx context.Context, collection *model.Collection, words ...string) (string, error)
+	CreateOnS3(ctx context.Context, collection *model.Collection, words ...string) (*model.CollectionFile, error)
 }
 
 type TemplateRenderer interface {
@@ -54,6 +54,7 @@ func NewRouter(
 	r.Get("/card", handlers.ErrorHandlerHTML(handlers.CardPreview))
 	r.Post("/language", handlers.ErrorHandlerHTML(handlers.Language))
 	r.Get("/collection", handlers.ErrorHandlerHTML(handlers.Collection))
+	r.Post("/collection", handlers.ErrorHandlerHTML(handlers.CreateCollection))
 	r.Get("/styles.css", handlers.ErrorHandlerHTML(handlers.Styles))
 	r.Get("/public/*", publicHandler.ServeHTTP)
 	r.Get("/", handlers.ErrorHandlerHTML(handlers.Index))

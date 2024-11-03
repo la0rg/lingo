@@ -37,32 +37,43 @@
         </div>
     </header>
 
-    <main class="flex-1">
+    <main class="flex-1" hx-ext="response-targets">
         <div class="container mx-auto py-12">
             <div class="card bg-neutral text-neutral-content mx-4">
                 <div class="card-body">
-                    <h2 class="text-2xl mb-2">Create a collection</h2>
+                    <h2 class="text-2xl mb-2 text-primary">Create a collection</h2>
                     <ul class="list-disc mb-4 px-4">
-                        <li>
-                            <div class="flex items-center">
-                                Enter the words you want to learn
-                                <div class="tooltip tooltip-info px-1" data-tip="separate words with commas or new lines">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 stroke-info">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" />
-                                    </svg>                                  
-                                </div>
-                            </div>
-                        </li>
+                        <li>Enter the words you want to learn</li>
                         <li>Download an APKG file, pre-configured for immediate use in Anki</li>  
-                        <li>To expand an existing collection, enter new words and import the file into Anki again</li>
+                        <li>To expand an existing collection, enter new words and import the file into Anki</li>
                     </ul>
-                    <textarea 
-                    class="textarea textarea-bordered textarea-lg w-full mb-4"
-                    autofocus
-                    ></textarea>
-                    <div class="card-actions justify-center">
-                        <button id="create-collection" class="btn btn-primary">Create APKG</button>
-                    </div>
+                    <form 
+                        hx-post="/collection"
+                        hx-include="#language-selector"
+                        hx-target="#collection-footer"
+                        hx-swap="outerHTML"
+                        hx-disabled-elt="#words"
+                        hx-target-error="#collection-error"
+                        class="space-y-6"
+                    >
+                        <label class="form-control">
+                            <div class="label">
+                                <span class="label-text"></span>
+                                <span class="label-text-alt text-info">*use comma or newline as delimiter</span>
+                            </div>
+                            <textarea id="words" name="words" class="textarea textarea-bordered textarea-lg w-full" required autofocus></textarea>
+                        </label>
+                        <div id="collection-footer" class="space-y-4">
+                            <div id="collection-error" class="w-full"></div>
+                            <div class="flex flex-col items-center justify-center htmx-indicator">
+                                <span class="mb-2">Just a moment — we're creating your collection!</span>    
+                                <span class="loading loading-ring loading-lg"></span>
+                            </div>
+                            <div id="actions" class="card-actions justify-center htmx-content">
+                                <button type="submit" class="btn btn-primary w-full md:w-56">Create APKG</button>
+                            </div>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
