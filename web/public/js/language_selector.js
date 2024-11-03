@@ -1,6 +1,8 @@
 function closeOnClick(element) {
     document.addEventListener('click', function (event) {
-        element.removeAttribute('open');
+        if (!element.contains(event.target)) {
+            element.removeAttribute('open');
+        }
     });
 }
 
