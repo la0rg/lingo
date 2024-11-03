@@ -53,6 +53,7 @@ func NewRouter(
 
 	r.Get("/card", handlers.ErrorHandlerHTML(handlers.CardPreview))
 	r.Post("/language", handlers.ErrorHandlerHTML(handlers.Language))
+	r.Get("/collection", handlers.ErrorHandlerHTML(handlers.Collection))
 	r.Get("/styles.css", handlers.ErrorHandlerHTML(handlers.Styles))
 	r.Get("/public/*", publicHandler.ServeHTTP)
 	r.Get("/", handlers.ErrorHandlerHTML(handlers.Index))
