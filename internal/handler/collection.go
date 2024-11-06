@@ -12,7 +12,8 @@ import (
 )
 
 func (h *handlers) Collection(w http.ResponseWriter, r *http.Request) error {
-	return h.HTML(w, r, web.Collection, defaultLanguageSelector)
+	data := map[string]any{"LanguageSelector": defaultLanguageSelector}
+	return h.HTML(w, r, web.Collection, data)
 }
 
 func (h *handlers) CreateCollection(w http.ResponseWriter, r *http.Request) error {
@@ -49,13 +50,13 @@ func (h *handlers) CreateCollection(w http.ResponseWriter, r *http.Request) erro
 		return err
 	}
 
-	input := map[string]any{
+	data := map[string]any{
 		"URL":            file.URL,
 		"CardsCount":     file.CardsCount,
 		"RequestedCount": len(words),
 	}
 
-	return h.HTML(w, r, web.CollectionDownload, input)
+	return h.HTML(w, r, web.CollectionDownload, data)
 }
 
 // trimWords trims spaces and removes empty words from the slice.

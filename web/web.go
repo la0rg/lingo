@@ -5,6 +5,9 @@ import (
 	"embed"
 	"fmt"
 	"html/template"
+	"io/fs"
+	"log/slog"
+	"path/filepath"
 )
 
 //go:embed src/templates/*
@@ -28,21 +31,45 @@ const (
 )
 
 type Templates struct {
-	templates *template.Template
+	templates map[string]*template.Template
 }
 
 func NewTemplates() (*Templates, error) {
-	templates, err := template.ParseFS(templateFS, "src/templates/*.html")
+	templates := make(map[string]*template.Template)
+
+	templateFiles, err := fs.Glob(templateFS, "src/templates/*/*.html")
 	if err != nil {
-		return nil, fmt.Errorf("unable to parse html templates: %v", err)
+		return nil, fmt.Errorf("unable to get page templates: %v", err)
 	}
 
+	for _, file := range templateFiles {
+		name := filepath.Base(file)
+
+		template, err := template.ParseFS(
+			templateFS,
+			"src/templates/base.html",
+			"src/templates/partials/*.html",
+			file,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("unable to parse '%v' template: %v", name, err)
+		}
+
+		templates[name] = template
+	}
+
+	slog.Info("Templates are loaded", "count", len(templates))
 	return &Templates{templates: templates}, nil
 }
 
 func (t *Templates) Render(name TemplateName, data any) ([]byte, error) {
+	template, ok := t.templates[string(name)]
+	if !ok {
+		return nil, fmt.Errorf("template '%v' not found", name)
+	}
+
 	var buf bytes.Buffer
-	err := t.templates.ExecuteTemplate(&buf, string(name), data)
+	err := template.ExecuteTemplate(&buf, string(name), data)
 	if err != nil {
 		return nil, fmt.Errorf("unable to render template: %v", err)
 	}
