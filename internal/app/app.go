@@ -20,6 +20,7 @@ import (
 	"github.com/la0rg/lingo/internal/client"
 	"github.com/la0rg/lingo/internal/config"
 	"github.com/la0rg/lingo/internal/handler"
+	"github.com/la0rg/lingo/internal/mock"
 	"github.com/la0rg/lingo/internal/repository"
 	"github.com/la0rg/lingo/internal/service"
 	"github.com/la0rg/lingo/web"
@@ -74,8 +75,11 @@ func Run(ctx context.Context, conf *config.Config) error {
 }
 
 func gpt(conf *config.Config) cardgen.GPTClient {
+	if conf.MockOpenAI {
+		return mock.GPTClient{}
+	}
+
 	return openai.NewClient(conf.OpenAIKey)
-	// return mock.GPTClient{}
 }
 
 func dbConfig(ctx context.Context, conf *config.Config) (aws.Config, error) {

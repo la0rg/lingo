@@ -10,12 +10,13 @@ import (
 )
 
 type Config struct {
-	LogLevel  string
-	Port      int
-	OpenAIKey string
-	APIKeys   []string
-	Dynamo    AWS
-	S3        S3
+	LogLevel   string
+	Port       int
+	MockOpenAI bool
+	OpenAIKey  string
+	APIKeys    []string
+	Dynamo     AWS
+	S3         S3
 }
 
 type S3 struct {
