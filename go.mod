@@ -12,7 +12,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.48.1
 	github.com/go-chi/chi v1.5.5
 	github.com/google/uuid v1.6.0
-	github.com/sashabaranov/go-openai v1.17.2
+	github.com/sashabaranov/go-openai v1.35.6
 	github.com/spf13/viper v1.18.2
 	github.com/stretchr/testify v1.8.4
 	modernc.org/sqlite v1.26.0

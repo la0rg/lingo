@@ -44,7 +44,7 @@ func (g OpenAI) Generate(ctx context.Context, collection *model.Collection, word
 		ctx,
 		openai.ChatCompletionRequest{
 			MaxTokens: tokenLimit,
-			Model:     openai.GPT3Dot5Turbo1106,
+			Model:     openai.GPT4oMini,
 			ResponseFormat: &openai.ChatCompletionResponseFormat{
 				Type: openai.ChatCompletionResponseFormatTypeJSONObject,
 			},

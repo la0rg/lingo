@@ -46,7 +46,7 @@ func (s *APKG) CreateOnS3(ctx context.Context, collection *model.Collection, wor
 	}
 
 	if len(wordsToGenerate) > 0 {
-		logger.Info("Generating new cards", "count", len(wordsToGenerate))
+		logger.Info("Generating new cards", "count", len(wordsToGenerate), "new_words", wordsToGenerate)
 
 		newCards, err := s.generator.Generate(ctx, collection, wordsToGenerate...)
 		if err != nil {
