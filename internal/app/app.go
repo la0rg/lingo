@@ -137,8 +137,8 @@ func startHTTPServer(conf *config.Config, handler http.Handler) error {
 		Addr:         addr,
 		Handler:      handler,
 		ReadTimeout:  5 * time.Second,
-		WriteTimeout: 5 * time.Second,
-		IdleTimeout:  30 * time.Second,
+		WriteTimeout: time.Minute,
+		IdleTimeout:  time.Minute * 5,
 	}
 
 	interrupt := make(chan os.Signal, 1)
