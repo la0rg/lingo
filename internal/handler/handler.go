@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi"
-	"github.com/go-chi/chi/middleware"
 	"github.com/la0rg/lingo/internal/config"
 	"github.com/la0rg/lingo/internal/model"
 	"github.com/la0rg/lingo/web"
@@ -40,10 +39,7 @@ func NewRouter(
 	publicHandler := http.FileServer(http.FS(web.PublicFS))
 
 	r := chi.NewRouter()
-
-	r.Use(middleware.RequestID)
-	r.Use(RequestLogger)
-	r.Use(Recoverer)
+	r.Use(RequestLogger, RequestID, Recoverer)
 
 	r.Route("/api/collections/{collection}", func(r chi.Router) {
 		r.Use(APIKey(conf))

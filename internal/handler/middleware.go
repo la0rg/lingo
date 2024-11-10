@@ -8,8 +8,15 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/middleware"
+	"github.com/google/uuid"
 	"github.com/la0rg/lingo/internal/config"
+	"github.com/la0rg/lingo/internal/ctxval"
 	"github.com/la0rg/lingo/internal/logger"
+)
+
+const (
+	requestIDHeader       = "X-Request-ID"
+	cloudflareRayIDHeader = "Cf-Ray"
 )
 
 func APIKey(c *config.Config) func(http.Handler) http.Handler {
@@ -69,5 +76,25 @@ func Recoverer(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	}
 
+	return http.HandlerFunc(fn)
+}
+
+func RequestID(next http.Handler) http.Handler {
+	fn := func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
+		requestID := r.Header.Get(requestIDHeader)
+		if requestID == "" {
+			requestID = r.Header.Get(cloudflareRayIDHeader)
+		}
+		if requestID == "" {
+			requestID = uuid.New().String()
+		}
+
+		ctx = ctxval.WithRequestID(ctx, requestID)
+
+		w.Header().Set(requestIDHeader, requestID)
+		next.ServeHTTP(w, r.WithContext(ctx))
+	}
 	return http.HandlerFunc(fn)
 }
