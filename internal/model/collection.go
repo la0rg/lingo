@@ -75,8 +75,16 @@ var (
 		},
 		{
 			Name: "lingo (reversed)",
-			Qfmt: `<hr id=answer><div class=word>{{translation}}</div><div class=small>{{context_translation}}</div>`,
-			Afmt: `{{FrontSide}}<div class=word>{{article}} {{word}}</div><div hidden></div><div class=mid>{{plural}}</div><div class=small>{{context}}</div>`,
+			Qfmt: `
+		<div class=transl>{{translation}}</div>
+		<div class=mid>{{context_translation}}</div>`,
+			Afmt: `
+		{{FrontSide}}
+		<hr id=answer>
+		<div class=\"word {{article}}\">{{article}} {{word}}</div>
+		<div class=transc>[{{transctiption}}]</div>
+		<div class=mid>{{context}}</div><br/>
+		<div class=small>{{definition}}</div>`,
 		},
 	}
 

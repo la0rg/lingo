@@ -19,13 +19,13 @@ func DefaultConfig(id int64, name string) Config {
 			Delays:        []float64{1, 10},
 			InitialFactor: 2500,
 			Ints:          []int{1, 4, 0},
-			PerDay:        20,
+			PerDay:        10,
 		},
 		Rev: apkgdb.ReviewCardConfig{
 			Ease4:  1.3,
 			IvlFct: 1.0,
 			MaxIvl: 36500,
-			PerDay: 100,
+			PerDay: 50,
 		},
 		Lapse: apkgdb.LapseCardConfig{
 			Delays:      []float64{10},
