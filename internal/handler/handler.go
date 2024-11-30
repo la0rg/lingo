@@ -40,6 +40,7 @@ func NewRouter(
 
 	r := chi.NewRouter()
 	r.Use(RequestLogger, RequestID, Recoverer)
+	r.Get("/version", ErrorHandler(handlers.Version))
 
 	r.Route("/api/collections/{collection}", func(r chi.Router) {
 		r.Use(APIKey(conf))

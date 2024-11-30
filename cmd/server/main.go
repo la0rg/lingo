@@ -17,8 +17,8 @@ func main() {
 	}
 
 	initLogger(conf)
-	slog.Info("Config loaded", "config", conf)
 
+	slog.Info("Lingo is starting...", "build_info", config.GetBuildInfo(), "config", conf)
 	if err := app.Run(context.Background(), conf); err != nil {
 		log.Fatal(err)
 	}
