@@ -44,7 +44,7 @@ func (g OpenAI) Generate(ctx context.Context, collection *model.Collection, word
 		ctx,
 		openai.ChatCompletionRequest{
 			MaxTokens: tokenLimit,
-			Model:     openai.GPT4oMini,
+			Model:     openai.GPT4o,
 			ResponseFormat: &openai.ChatCompletionResponseFormat{
 				Type: openai.ChatCompletionResponseFormatTypeJSONObject,
 			},
@@ -73,6 +73,10 @@ func (g OpenAI) Generate(ctx context.Context, collection *model.Collection, word
 	if err := json.Unmarshal(content, &res); err != nil {
 		logger.WithContext(ctx).Warn("OpenAI response is not a valid json", "response", resp.Choices[0].Message.Content)
 		return nil, fmt.Errorf("unable to parse OpenAI response: %v", err)
+	}
+
+	if len(res.Cards) == 0 {
+		return nil, fmt.Errorf("empty OpenAI response")
 	}
 
 	// TODO: Should it be here?
