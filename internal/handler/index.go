@@ -8,8 +8,6 @@ import (
 	"github.com/la0rg/lingo/web"
 )
 
-const defaultWord = "Bad"
-
 var defaultLanguageSelector = model.NewLanguageSelector("de", "en")
 
 func (h *handlers) Index(w http.ResponseWriter, r *http.Request) error {
@@ -20,7 +18,7 @@ func (h *handlers) Index(w http.ResponseWriter, r *http.Request) error {
 		return ErrCollectionNotFound
 	}
 
-	card, err := h.card.Get(r.Context(), collection, defaultWord)
+	card, err := h.card.Get(r.Context(), collection, collection.DefaultWord)
 	if err != nil {
 		return err
 	}

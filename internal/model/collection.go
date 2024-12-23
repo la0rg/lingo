@@ -37,7 +37,7 @@ var Collections = []Collection{
 		Name:           "Lingo DE-RU",
 		SourceLanguage: "de",
 		TargetLanguage: "ru",
-		DefaultWord:    "Bad",
+		DefaultWord:    "Apfel",
 		Template: apkg.Model{
 			ID:        1715808519,
 			Name:      "lingo_de_ru",

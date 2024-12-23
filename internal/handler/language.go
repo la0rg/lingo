@@ -3,6 +3,7 @@ package handler
 import (
 	"fmt"
 	"net/http"
+	"net/url"
 
 	"github.com/la0rg/lingo/internal/model"
 	"github.com/la0rg/lingo/web"
@@ -26,9 +27,16 @@ func (h *handlers) Language(w http.ResponseWriter, r *http.Request) error {
 	)
 
 	http.SetCookie(w, &http.Cookie{
-		Name:  languageCookie,
-		Value: fmt.Sprintf("%s,%s", languageSelector.SourceCountryCode, languageSelector.TargetCountryCode),
-		Path:  "/",
+		Name:     languageCookie,
+		Value:    fmt.Sprintf("%s,%s", languageSelector.SourceCountryCode, languageSelector.TargetCountryCode),
+		Path:     "/",
+		SameSite: http.SameSiteLaxMode,
 	})
+
+	if refererURL, err := url.Parse(r.Referer()); err == nil && refererURL.Path == "/" {
+		// reload index page to get a new default word preview for the selected lang pair
+		w.Header().Set("HX-Refresh", "true")
+	}
+
 	return h.HTML(w, r, web.LanguageSelector, languageSelector)
 }

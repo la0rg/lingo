@@ -59,7 +59,7 @@
                         <input 
                             type="text" 
                             class="input input-bordered w-full" 
-                            value="Bad" placeholder="Enter a word"
+                            value="{{ .Card.Word }}" placeholder="Enter a word"
                             name="word"
                             hx-get="/card"
                             hx-indicator="#card-request"
