@@ -12,6 +12,10 @@ type LanguageSelector struct {
 	Languages         []Language
 }
 
+func (ls LanguageSelector) CollectionSlug() string {
+	return CollectionSlug(ls.SourceCountryCode, ls.TargetCountryCode)
+}
+
 type Language struct {
 	CountryCode string
 	Flag        string

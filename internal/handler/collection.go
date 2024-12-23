@@ -12,7 +12,7 @@ import (
 )
 
 func (h *handlers) Collection(w http.ResponseWriter, r *http.Request) error {
-	data := map[string]any{"LanguageSelector": defaultLanguageSelector}
+	data := map[string]any{"LanguageSelector": h.languageSelectorFromCookie(r)}
 	return h.HTML(w, r, web.Collection, data)
 }
 

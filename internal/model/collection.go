@@ -9,6 +9,7 @@ type Collection struct {
 	Name           string
 	SourceLanguage string
 	TargetLanguage string
+	DefaultWord    string
 	Template       apkg.Model
 }
 
@@ -22,6 +23,7 @@ var Collections = []Collection{
 		Name:           "Lingo DE-EN",
 		SourceLanguage: "de",
 		TargetLanguage: "en",
+		DefaultWord:    "Bad",
 		Template: apkg.Model{
 			ID:        1715808518,
 			Name:      "lingo_de_en",
@@ -35,6 +37,7 @@ var Collections = []Collection{
 		Name:           "Lingo DE-RU",
 		SourceLanguage: "de",
 		TargetLanguage: "ru",
+		DefaultWord:    "Bad",
 		Template: apkg.Model{
 			ID:        1715808519,
 			Name:      "lingo_de_ru",

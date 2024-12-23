@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/la0rg/lingo/internal/model"
 	"github.com/la0rg/lingo/web"
@@ -9,17 +10,13 @@ import (
 
 const defaultWord = "Bad"
 
-var (
-	defaultLanguageSelector = model.NewLanguageSelector("de", "en")
-	defaultCollectionSlug   = model.CollectionSlug(
-		defaultLanguageSelector.SourceCountryCode,
-		defaultLanguageSelector.TargetCountryCode,
-	)
-)
+var defaultLanguageSelector = model.NewLanguageSelector("de", "en")
 
 func (h *handlers) Index(w http.ResponseWriter, r *http.Request) error {
-	collection, ok := model.CollectionsMap[defaultCollectionSlug]
+	langSelector := h.languageSelectorFromCookie(r)
+	collection, ok := model.CollectionsMap[langSelector.CollectionSlug()]
 	if !ok {
+		http.SetCookie(w, &http.Cookie{Name: languageCookie, MaxAge: -1}) // reset the language pair
 		return ErrCollectionNotFound
 	}
 
@@ -29,8 +26,22 @@ func (h *handlers) Index(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	data := map[string]any{
-		"LanguageSelector": defaultLanguageSelector,
+		"LanguageSelector": langSelector,
 		"Card":             card,
 	}
 	return h.HTML(w, r, web.Index, data)
+}
+
+func (h *handlers) languageSelectorFromCookie(r *http.Request) model.LanguageSelector {
+	langCookie, err := r.Cookie(languageCookie)
+	if err != nil || langCookie == nil {
+		return defaultLanguageSelector
+	}
+
+	parts := strings.Split(langCookie.Value, ",")
+	if len(parts) != 2 || len(parts[0]) == 0 || len(parts[1]) == 0 {
+		return defaultLanguageSelector
+	}
+
+	return model.NewLanguageSelector(parts[0], parts[1])
 }
