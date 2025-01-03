@@ -7,6 +7,7 @@ import (
 
 	"github.com/la0rg/lingo/internal/model"
 	"github.com/la0rg/lingo/internal/service"
+	pkgmaps "github.com/la0rg/lingo/pkg/maps"
 	pkgstrings "github.com/la0rg/lingo/pkg/strings"
 	"github.com/la0rg/lingo/web"
 )
@@ -36,7 +37,7 @@ func (h *handlers) CreateCollection(w http.ResponseWriter, r *http.Request) erro
 		return ErrEmptyWordList
 	}
 
-	words := trimWords(pkgstrings.SplitAny(wordsStr, "\n,"))
+	words := pkgmaps.Unique(trimWords(pkgstrings.SplitAny(wordsStr, "\n,")))
 	if len(words) == 0 {
 		return ErrEmptyWordList
 	}
@@ -54,6 +55,7 @@ func (h *handlers) CreateCollection(w http.ResponseWriter, r *http.Request) erro
 		"URL":            file.URL,
 		"CardsCount":     file.CardsCount,
 		"RequestedCount": len(words),
+		"MissingWords":   file.MissingWords,
 	}
 
 	return h.HTML(w, r, web.CollectionDownload, data)
@@ -64,7 +66,7 @@ func (h *handlers) CreateCollection(w http.ResponseWriter, r *http.Request) erro
 func trimWords(words []string) []string {
 	total := 0
 	for _, word := range words {
-		word := strings.TrimSpace(word)
+		word := strings.ToLower(strings.TrimSpace(word))
 		if word != "" {
 			words[total] = word
 			total++

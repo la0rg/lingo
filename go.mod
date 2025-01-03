@@ -1,6 +1,6 @@
 module github.com/la0rg/lingo
 
-go 1.21.0
+go 1.23.0
 
 require (
 	github.com/aws/aws-sdk-go v1.51.9
@@ -15,6 +15,7 @@ require (
 	github.com/sashabaranov/go-openai v1.36.0
 	github.com/spf13/viper v1.18.2
 	github.com/stretchr/testify v1.8.4
+	golang.org/x/exp v0.0.0-20230905200255-921286631fa9
 	modernc.org/sqlite v1.26.0
 )
 
@@ -56,7 +57,6 @@ require (
 	github.com/subosito/gotenv v1.6.0 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.9.0 // indirect
-	golang.org/x/exp v0.0.0-20230905200255-921286631fa9 // indirect
 	golang.org/x/mod v0.13.0 // indirect
 	golang.org/x/sys v0.15.0 // indirect
 	golang.org/x/text v0.14.0 // indirect

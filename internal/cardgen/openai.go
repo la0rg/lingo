@@ -59,7 +59,7 @@ func (g OpenAI) Generate(ctx context.Context, collection *model.Collection, word
 	}
 
 	if len(resp.Choices) < 1 {
-		return nil, fmt.Errorf("empty OpenAI response")
+		return nil, nil
 	}
 
 	logger.WithContext(ctx).Debug("OpenAI response", "response", resp)
@@ -73,10 +73,6 @@ func (g OpenAI) Generate(ctx context.Context, collection *model.Collection, word
 	if err := json.Unmarshal(content, &res); err != nil {
 		logger.WithContext(ctx).Warn("OpenAI response is not a valid json", "response", resp.Choices[0].Message.Content)
 		return nil, fmt.Errorf("unable to parse OpenAI response: %v", err)
-	}
-
-	if len(res.Cards) == 0 {
-		return nil, fmt.Errorf("empty OpenAI response")
 	}
 
 	// TODO: Should it be here?

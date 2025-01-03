@@ -1,6 +1,8 @@
 package strings
 
-import "strings"
+import (
+	"strings"
+)
 
 func SplitAny(s string, chars string) []string {
 	splitFunc := func(r rune) bool {

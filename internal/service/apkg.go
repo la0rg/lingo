@@ -3,6 +3,8 @@ package service
 import (
 	"context"
 	"fmt"
+	"log/slog"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -45,25 +47,11 @@ func (s *APKG) CreateOnS3(ctx context.Context, collection *model.Collection, wor
 		cards = append(cards, *card)
 	}
 
-	if len(wordsToGenerate) > 0 {
-		logger.Info("Generating new cards", "count", len(wordsToGenerate), "new_words", wordsToGenerate)
-
-		newCards, err := s.generator.Generate(ctx, collection, wordsToGenerate...)
-		if err != nil {
-			return nil, fmt.Errorf("unable to generate cards: %w", err)
-		}
-
-		cards = append(cards, newCards...)
-
-		go func() {
-			ctx := context.WithoutCancel(ctx)
-			for _, card := range newCards {
-				if err := s.cardRepo.Put(ctx, card); err != nil {
-					logger.Error("Failed to store a card in DB", "error", err)
-				}
-			}
-		}()
+	newCards, err := s.generate(ctx, logger, collection, wordsToGenerate...)
+	if err != nil {
+		return nil, err
 	}
+	cards = append(cards, newCards...)
 
 	apkgCollection, err := s.buildAPKG(collection, cards)
 	if err != nil {
@@ -84,11 +72,52 @@ func (s *APKG) CreateOnS3(ctx context.Context, collection *model.Collection, wor
 		URL:            url,
 		CardsCount:     len(cards),
 		CollectionName: collection.Name,
+		MissingWords:   s.missingWords(newCards, wordsToGenerate),
 	}, nil
 }
 
+func (s *APKG) generate(ctx context.Context, logger *slog.Logger, collection *model.Collection, words ...string) ([]model.Card, error) {
+	if len(words) == 0 {
+		return nil, nil
+	}
+
+	logger.Info("Generating new cards", "new_words", words)
+
+	newCards, err := s.generator.Generate(ctx, collection, words...)
+	if err != nil {
+		return nil, fmt.Errorf("unable to generate cards: %w", err)
+	}
+
+	go func() {
+		ctx := context.WithoutCancel(ctx)
+		for _, card := range newCards {
+			if err := s.cardRepo.Put(ctx, card); err != nil {
+				logger.Error("Failed to store a card in DB", "error", err)
+			}
+		}
+	}()
+
+	return newCards, nil
+}
+
+func (s *APKG) missingWords(cards []model.Card, words []string) []string {
+	var cardsMap = make(map[string]struct{}, len(cards))
+	for _, card := range cards {
+		cardsMap[strings.ToLower(card.Word)] = struct{}{}
+	}
+
+	var missingWords []string
+	for _, w := range words {
+		if _, ok := cardsMap[strings.ToLower(w)]; !ok {
+			missingWords = append(missingWords, w)
+		}
+	}
+
+	return missingWords
+}
+
 func (s *APKG) buildAPKG(collection *model.Collection, cards []model.Card) (*apkg.Collection, error) {
-	if cards == nil || len(cards) == 0 {
+	if len(cards) == 0 {
 		return nil, ErrEmptyCards
 	}
 

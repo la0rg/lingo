@@ -1,4 +1,4 @@
-loglevel: "INFO"
+loglevel: "DEBUG"
 mockopenai: true
 apikeys:
   - "0c80d8c3-889c-441c-b792-50ae271a4348"
