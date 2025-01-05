@@ -5,10 +5,10 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/la0rg/lingo/internal/maps"
 	"github.com/la0rg/lingo/internal/model"
 	"github.com/la0rg/lingo/internal/service"
-	pkgmaps "github.com/la0rg/lingo/pkg/maps"
-	pkgstrings "github.com/la0rg/lingo/pkg/strings"
+	istrings "github.com/la0rg/lingo/internal/strings"
 	"github.com/la0rg/lingo/web"
 )
 
@@ -37,7 +37,7 @@ func (h *handlers) CreateCollection(w http.ResponseWriter, r *http.Request) erro
 		return ErrEmptyWordList
 	}
 
-	words := pkgmaps.Unique(trimWords(pkgstrings.SplitAny(wordsStr, "\n,")))
+	words := maps.Unique(trimWords(istrings.SplitAny(wordsStr, "\n,")))
 	if len(words) == 0 {
 		return ErrEmptyWordList
 	}
@@ -61,7 +61,7 @@ func (h *handlers) CreateCollection(w http.ResponseWriter, r *http.Request) erro
 	return h.HTML(w, r, web.CollectionDownload, data)
 }
 
-// trimWords trims spaces and removes empty words from the slice.
+// trimWords trims and removes empty words from the slice. Words are converted to lowercase.
 // The slice is modified in place.
 func trimWords(words []string) []string {
 	total := 0

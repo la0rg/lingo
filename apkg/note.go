@@ -5,7 +5,7 @@ import (
 	"encoding/hex"
 	"time"
 
-	"github.com/la0rg/lingo/pkg/apkg/apkgdb"
+	"github.com/la0rg/lingo/apkg/apkgdb"
 )
 
 type Note struct {

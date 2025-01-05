@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/la0rg/lingo/pkg/apkg/apkgdb"
-	"github.com/la0rg/lingo/pkg/maps"
+	"github.com/la0rg/lingo/apkg/apkgdb"
+	"github.com/la0rg/lingo/internal/maps"
 )
 
 type Collection struct {

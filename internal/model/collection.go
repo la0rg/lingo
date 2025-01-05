@@ -1,7 +1,7 @@
 package model
 
 import (
-	"github.com/la0rg/lingo/pkg/apkg"
+	"github.com/la0rg/lingo/apkg"
 )
 
 type Collection struct {

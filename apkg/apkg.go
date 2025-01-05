@@ -5,7 +5,7 @@ import (
 	"bytes"
 	"fmt"
 
-	"github.com/la0rg/lingo/pkg/apkg/apkgdb"
+	"github.com/la0rg/lingo/apkg/apkgdb"
 )
 
 const (

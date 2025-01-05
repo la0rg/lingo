@@ -8,9 +8,9 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/la0rg/lingo/apkg"
 	"github.com/la0rg/lingo/internal/logger"
 	"github.com/la0rg/lingo/internal/model"
-	"github.com/la0rg/lingo/pkg/apkg"
 )
 
 var apkgConfig = apkg.DefaultConfig(6493485093845, "lingo_config")

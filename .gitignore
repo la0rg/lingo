@@ -32,3 +32,6 @@ go.work
 
 # Web dependencies
 web/node_modules/
+
+# Air
+tmp/

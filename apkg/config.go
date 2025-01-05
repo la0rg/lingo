@@ -3,7 +3,7 @@ package apkg
 import (
 	"time"
 
-	"github.com/la0rg/lingo/pkg/apkg/apkgdb"
+	"github.com/la0rg/lingo/apkg/apkgdb"
 )
 
 type Config apkgdb.DeckConfig

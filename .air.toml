@@ -5,7 +5,7 @@ tmp_dir = ".bin"
 [build]
 args_bin = []
 bin = "./.bin/lingo"
-cmd = "go build -o .bin/lingo cmd/server/main.go"
+cmd = "go build -o .bin/lingo main.go"
 delay = 1000
 exclude_dir = [".vscode", ".bin", "web/node_modules"]
 exclude_file = []
