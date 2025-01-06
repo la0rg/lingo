@@ -5,6 +5,7 @@ import (
 
 	"github.com/la0rg/lingo/apkg"
 	"github.com/la0rg/lingo/internal/model"
+	"github.com/la0rg/lingo/web"
 )
 
 //go:embed data/*
@@ -56,50 +57,113 @@ func readData(name string) (string, error) {
 	return string(b), nil
 }
 
-var fields = []string{
-	"word",
-	"article",
-	"transctiption",
-	"plural",
-	"translation",
-	"context",
-	"context_translation",
-	"definition",
-}
-
 var collections = []model.Collection{
 	{
-		ID:             1715808757,
-		Name:           "Lingo DE-EN",
-		SourceLanguage: "de",
-		TargetLanguage: "en",
-		DefaultWord:    "Bad",
+		ID:               1715808757,
+		Name:             "Lingo DE-EN",
+		SourceLanguage:   "de",
+		TargetLanguage:   "en",
+		DefaultWord:      "Bad",
+		HTMLTemplateName: web.CardPreviewDE,
 		Template: apkg.Model{
-			ID:   1715808518,
+			ID:   1715808522,
 			Name: "lingo_de_en",
 			Css:  "data/styles_de.css",
 			Templates: []apkg.Template{
 				{Name: "lingo_de_en", Qfmt: "data/qfmt_de.html", Afmt: "data/afmt_de.html"},
 				{Name: "lingo_de_en_reversed", Qfmt: "data/qfmt_reversed_de.html", Afmt: "data/afmt_reversed_de.html"},
 			},
-			Fields: fields,
+			Fields: []string{
+				model.CardFieldWord,
+				model.CardFieldArticle,
+				model.CardFieldTranscription,
+				model.CardFieldPlural,
+				model.CardFieldTranslation,
+				model.CardFieldContext,
+				model.CardFieldContextTranslation,
+				model.CardFieldDefinition,
+			},
 		},
 	},
 	{
-		ID:             1715808758,
-		Name:           "Lingo DE-RU",
-		SourceLanguage: "de",
-		TargetLanguage: "ru",
-		DefaultWord:    "Apfel",
+		ID:               1715808758,
+		Name:             "Lingo DE-RU",
+		SourceLanguage:   "de",
+		TargetLanguage:   "ru",
+		DefaultWord:      "Apfel",
+		HTMLTemplateName: web.CardPreviewDE,
 		Template: apkg.Model{
-			ID:   1715808519,
+			ID:   1715808523,
 			Name: "lingo_de_ru",
 			Css:  "data/styles_de.css",
 			Templates: []apkg.Template{
 				{Name: "lingo_de_en", Qfmt: "data/qfmt_de.html", Afmt: "data/afmt_de.html"},
 				{Name: "lingo_de_en_reversed", Qfmt: "data/qfmt_reversed_de.html", Afmt: "data/afmt_reversed_de.html"},
 			},
-			Fields: fields,
+			Fields: []string{
+				model.CardFieldWord,
+				model.CardFieldArticle,
+				model.CardFieldTranscription,
+				model.CardFieldPlural,
+				model.CardFieldTranslation,
+				model.CardFieldContext,
+				model.CardFieldContextTranslation,
+				model.CardFieldDefinition,
+			},
+		},
+	},
+	{
+		ID:               1715808759,
+		Name:             "Lingo RU-EN",
+		SourceLanguage:   "ru",
+		TargetLanguage:   "en",
+		DefaultWord:      "Мир",
+		HTMLTemplateName: web.CardPreviewRU,
+		Template: apkg.Model{
+			ID:   1715808524,
+			Name: "lingo_ru_en",
+			Css:  "data/styles_ru.css",
+			Templates: []apkg.Template{
+				{Name: "lingo_ru_en", Qfmt: "data/qfmt_ru.html", Afmt: "data/afmt_ru.html"},
+				{Name: "lingo_ru_en_reversed", Qfmt: "data/qfmt_reversed_ru.html", Afmt: "data/afmt_reversed_ru.html"},
+			},
+			Fields: []string{
+				model.CardFieldWord,
+				model.CardFieldGender,
+				model.CardFieldTranscription,
+				model.CardFieldPlural,
+				model.CardFieldTranslation,
+				model.CardFieldContext,
+				model.CardFieldContextTranslation,
+				model.CardFieldDefinition,
+			},
+		},
+	},
+	{
+		ID:               1715808760,
+		Name:             "Lingo RU-DE",
+		SourceLanguage:   "ru",
+		TargetLanguage:   "de",
+		DefaultWord:      "Мир",
+		HTMLTemplateName: web.CardPreviewRU,
+		Template: apkg.Model{
+			ID:   1715808525,
+			Name: "lingo_ru_de",
+			Css:  "data/styles_ru.css",
+			Templates: []apkg.Template{
+				{Name: "lingo_ru_de", Qfmt: "data/qfmt_ru.html", Afmt: "data/afmt_ru.html"},
+				{Name: "lingo_ru_de_reversed", Qfmt: "data/qfmt_reversed_ru.html", Afmt: "data/afmt_reversed_ru.html"},
+			},
+			Fields: []string{
+				model.CardFieldWord,
+				model.CardFieldGender,
+				model.CardFieldTranscription,
+				model.CardFieldPlural,
+				model.CardFieldTranslation,
+				model.CardFieldContext,
+				model.CardFieldContextTranslation,
+				model.CardFieldDefinition,
+			},
 		},
 	},
 }

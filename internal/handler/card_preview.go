@@ -6,7 +6,6 @@ import (
 
 	"github.com/la0rg/lingo/internal/model"
 	"github.com/la0rg/lingo/internal/service"
-	"github.com/la0rg/lingo/web"
 )
 
 func (h *handlers) CardPreview(w http.ResponseWriter, r *http.Request) error {
@@ -33,5 +32,5 @@ func (h *handlers) CardPreview(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	return h.HTML(w, r, web.CardPreview, card)
+	return h.HTML(w, r, collection.HTMLTemplateName, card)
 }

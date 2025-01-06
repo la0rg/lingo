@@ -124,20 +124,11 @@ func (s *APKG) buildAPKG(collection *model.Collection, cards []model.Card) (*apk
 	notes := make([]apkg.Note, 0)
 
 	for _, card := range cards {
-		notes = append(notes, apkg.Note{
-			ID:    card.ID,
-			Model: collection.Template,
-			Fields: []string{
-				card.Word,
-				card.Article,
-				card.Transcription,
-				card.Plural,
-				card.AllTranslations(),
-				card.Context,
-				card.ContextTranslation,
-				card.Definition,
-			},
-		})
+		note := apkg.Note{ID: card.ID, Model: collection.Template}
+		for _, field := range collection.Template.Fields {
+			note.Fields = append(note.Fields, card.FieldByName(field))
+		}
+		notes = append(notes, note)
 	}
 
 	return &apkg.Collection{

@@ -26,6 +26,7 @@ func (h *handlers) Index(w http.ResponseWriter, r *http.Request) error {
 	return h.HTML(w, r, web.Index, map[string]any{
 		"LanguageSelector": langSelector,
 		"Card":             card,
+		"HTMLTemplateName": collection.HTMLTemplateName,
 	})
 }
 

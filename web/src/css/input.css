@@ -40,6 +40,13 @@
   margin: 10px 0 0;
 }
 
+.anki-gender {
+  font-size: 14px;
+  font-style: italic;
+  color: #111111;
+  margin: 10px 0 0;
+}
+
 .anki-word.de-article-der {
   color: #262e7d;
 }

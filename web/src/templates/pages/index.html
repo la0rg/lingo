@@ -79,7 +79,13 @@
                         </div>
                     </div>
                     <div id="card-request">
-                        {{ template "card.html" .Card }}
+                        {{ if eq .HTMLTemplateName "card_de.html" }}
+                            {{ template "card_de.html" .Card }}
+                        {{ else  if eq .HTMLTemplateName "card_ru.html" }}
+                            {{ template "card_ru.html" .Card }}
+                        {{ else }}
+                            {{ template "card_de.html" .Card }}
+                        {{ end }}
                     </div>
                 </div>
             </div>
