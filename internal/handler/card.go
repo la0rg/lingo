@@ -5,14 +5,13 @@ import (
 	"strings"
 
 	"github.com/go-chi/chi"
-	"github.com/la0rg/lingo/internal/model"
 )
 
 func (h *handlers) Card(w http.ResponseWriter, r *http.Request) error {
-	collectionName := strings.ToLower(chi.URLParam(r, "collection"))
+	collectionSlug := strings.ToLower(chi.URLParam(r, "collection"))
 
-	collection, ok := model.CollectionsMap[collectionName]
-	if !ok {
+	collection := h.collection.GetBySlug(collectionSlug)
+	if collection == nil {
 		return ErrCollectionNotFound
 	}
 

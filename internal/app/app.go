@@ -59,12 +59,17 @@ func Run(ctx context.Context, conf *config.Config) error {
 		return err
 	}
 
+	collectionRepo, err := repository.NewCollection()
+	if err != nil {
+		return err
+	}
+
 	cardRepo := repository.NewCard(db)
 	apkgRepo := repository.NewAPKG(s3, conf)
 	cardService := service.NewCard(generator, cardRepo)
 	apkgService := service.NewAPKG(generator, apkgRepo, cardRepo)
 
-	router := handler.NewRouter(conf, cardService, apkgService, templates)
+	router := handler.NewRouter(conf, cardService, apkgService, templates, collectionRepo)
 
 	if err := startHTTPServer(conf, router); err != nil {
 		return err

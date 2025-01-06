@@ -27,8 +27,8 @@ func (h *handlers) CreateCollection(w http.ResponseWriter, r *http.Request) erro
 		return ErrInvalidLanguage
 	}
 
-	collection, ok := model.CollectionsMap[model.CollectionSlug(source, target)]
-	if !ok {
+	collection := h.collection.GetBySlug(model.CollectionSlug(source, target))
+	if collection == nil {
 		return ErrCollectionNotFound
 	}
 
@@ -51,14 +51,12 @@ func (h *handlers) CreateCollection(w http.ResponseWriter, r *http.Request) erro
 		return err
 	}
 
-	data := map[string]any{
+	return h.HTML(w, r, web.CollectionDownload, map[string]any{
 		"URL":            file.URL,
 		"CardsCount":     file.CardsCount,
 		"RequestedCount": len(words),
 		"MissingWords":   file.MissingWords,
-	}
-
-	return h.HTML(w, r, web.CollectionDownload, data)
+	})
 }
 
 // trimWords trims and removes empty words from the slice. Words are converted to lowercase.

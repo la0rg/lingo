@@ -12,8 +12,8 @@ var defaultLanguageSelector = model.NewLanguageSelector("de", "en")
 
 func (h *handlers) Index(w http.ResponseWriter, r *http.Request) error {
 	langSelector := h.languageSelectorFromCookie(r)
-	collection, ok := model.CollectionsMap[langSelector.CollectionSlug()]
-	if !ok {
+	collection := h.collection.GetBySlug(langSelector.CollectionSlug())
+	if collection == nil {
 		http.SetCookie(w, &http.Cookie{Name: languageCookie, MaxAge: -1}) // reset the language pair
 		return ErrCollectionNotFound
 	}
@@ -23,11 +23,10 @@ func (h *handlers) Index(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	data := map[string]any{
+	return h.HTML(w, r, web.Index, map[string]any{
 		"LanguageSelector": langSelector,
 		"Card":             card,
-	}
-	return h.HTML(w, r, web.Index, data)
+	})
 }
 
 func (h *handlers) languageSelectorFromCookie(r *http.Request) model.LanguageSelector {

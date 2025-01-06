@@ -22,11 +22,16 @@ type TemplateRenderer interface {
 	Render(name web.TemplateName, data any) ([]byte, error)
 }
 
+type CollectionGetter interface {
+	GetBySlug(slug string) *model.Collection
+}
+
 type handlers struct {
-	conf *config.Config
-	card CardService
-	apkg APKGService
-	tmpl TemplateRenderer
+	conf       *config.Config
+	card       CardService
+	apkg       APKGService
+	tmpl       TemplateRenderer
+	collection CollectionGetter
 }
 
 func NewRouter(
@@ -34,8 +39,9 @@ func NewRouter(
 	card CardService,
 	apkg APKGService,
 	tmpl TemplateRenderer,
+	collection CollectionGetter,
 ) http.Handler {
-	handlers := handlers{conf: conf, card: card, apkg: apkg, tmpl: tmpl}
+	handlers := handlers{conf: conf, card: card, apkg: apkg, tmpl: tmpl, collection: collection}
 	publicHandler := http.FileServer(http.FS(web.PublicFS))
 
 	r := chi.NewRouter()
