@@ -1,0 +1,35 @@
+.card {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    background-color: #F5F2E7;
+}
+
+.word {
+    font-size: 28px;
+    color: #582177;
+}
+
+.transc {
+    font-size: 16px;
+    color: #317FC0;
+    font-family: Arial Unicode MS;
+}
+
+.transl {
+    font-size: 22px;
+    color: #582177;
+    margin: 0 0 10px;
+}
+
+.mid {
+    font-size: 17px;
+    color: #222222;
+    margin: 10px 0 0;
+}
+
+.small {
+    font-size: 14px;
+    font-style: italic;
+    color: #111111;
+    margin: 10px 0 0;
+}

@@ -25,6 +25,7 @@ const (
 	Index              TemplateName = "index.html"
 	Collection         TemplateName = "collection.html"
 	CollectionDownload TemplateName = "collection_download.html"
+	CardPreview        TemplateName = "card.html"
 	CardPreviewDE      TemplateName = "card_de.html"
 	CardPreviewRU      TemplateName = "card_ru.html"
 	LanguageSelector   TemplateName = "language_selector.html"

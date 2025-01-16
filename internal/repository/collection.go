@@ -63,15 +63,15 @@ var collections = []model.Collection{
 		Name:             "Lingo DE-EN",
 		SourceLanguage:   "de",
 		TargetLanguage:   "en",
-		DefaultWord:      "Bad",
+		DefaultWord:      "Apfel",
 		HTMLTemplateName: web.CardPreviewDE,
 		Template: apkg.Model{
 			ID:   1715808522,
 			Name: "lingo_de_en",
 			Css:  "data/styles_de.css",
 			Templates: []apkg.Template{
-				{Name: "lingo_de_en", Qfmt: "data/qfmt_de.html", Afmt: "data/afmt_de.html"},
-				{Name: "lingo_de_en_reversed", Qfmt: "data/qfmt_reversed_de.html", Afmt: "data/afmt_reversed_de.html"},
+				{Name: "lingo_de_en", Qfmt: "data/qfmt_de.html", Afmt: "data/afmt.html"},
+				{Name: "lingo_de_en_reversed", Qfmt: "data/qfmt_reversed.html", Afmt: "data/afmt_reversed_de.html"},
 			},
 			Fields: []string{
 				model.CardFieldWord,
@@ -97,8 +97,8 @@ var collections = []model.Collection{
 			Name: "lingo_de_ru",
 			Css:  "data/styles_de.css",
 			Templates: []apkg.Template{
-				{Name: "lingo_de_en", Qfmt: "data/qfmt_de.html", Afmt: "data/afmt_de.html"},
-				{Name: "lingo_de_en_reversed", Qfmt: "data/qfmt_reversed_de.html", Afmt: "data/afmt_reversed_de.html"},
+				{Name: "lingo_de_en", Qfmt: "data/qfmt_de.html", Afmt: "data/afmt.html"},
+				{Name: "lingo_de_en_reversed", Qfmt: "data/qfmt_reversed.html", Afmt: "data/afmt_reversed_de.html"},
 			},
 			Fields: []string{
 				model.CardFieldWord,
@@ -124,8 +124,8 @@ var collections = []model.Collection{
 			Name: "lingo_ru_en",
 			Css:  "data/styles_ru.css",
 			Templates: []apkg.Template{
-				{Name: "lingo_ru_en", Qfmt: "data/qfmt_ru.html", Afmt: "data/afmt_ru.html"},
-				{Name: "lingo_ru_en_reversed", Qfmt: "data/qfmt_reversed_ru.html", Afmt: "data/afmt_reversed_ru.html"},
+				{Name: "lingo_ru_en", Qfmt: "data/qfmt_ru.html", Afmt: "data/afmt.html"},
+				{Name: "lingo_ru_en_reversed", Qfmt: "data/qfmt_reversed.html", Afmt: "data/afmt_reversed_ru.html"},
 			},
 			Fields: []string{
 				model.CardFieldWord,
@@ -151,12 +151,64 @@ var collections = []model.Collection{
 			Name: "lingo_ru_de",
 			Css:  "data/styles_ru.css",
 			Templates: []apkg.Template{
-				{Name: "lingo_ru_de", Qfmt: "data/qfmt_ru.html", Afmt: "data/afmt_ru.html"},
-				{Name: "lingo_ru_de_reversed", Qfmt: "data/qfmt_reversed_ru.html", Afmt: "data/afmt_reversed_ru.html"},
+				{Name: "lingo_ru_de", Qfmt: "data/qfmt_ru.html", Afmt: "data/afmt.html"},
+				{Name: "lingo_ru_de_reversed", Qfmt: "data/qfmt_reversed.html", Afmt: "data/afmt_reversed_ru.html"},
 			},
 			Fields: []string{
 				model.CardFieldWord,
 				model.CardFieldGender,
+				model.CardFieldTranscription,
+				model.CardFieldPlural,
+				model.CardFieldTranslation,
+				model.CardFieldContext,
+				model.CardFieldContextTranslation,
+				model.CardFieldDefinition,
+			},
+		},
+	},
+	{
+		ID:               1715808761,
+		Name:             "Lingo EN-DE",
+		SourceLanguage:   "en",
+		TargetLanguage:   "de",
+		DefaultWord:      "Book",
+		HTMLTemplateName: web.CardPreview,
+		Template: apkg.Model{
+			ID:   1715808526,
+			Name: "lingo_en_de",
+			Css:  "data/styles.css",
+			Templates: []apkg.Template{
+				{Name: "lingo_en_de", Qfmt: "data/qfmt.html", Afmt: "data/afmt.html"},
+				{Name: "lingo_en_de_reversed", Qfmt: "data/qfmt_reversed.html", Afmt: "data/afmt_reversed.html"},
+			},
+			Fields: []string{
+				model.CardFieldWord,
+				model.CardFieldTranscription,
+				model.CardFieldPlural,
+				model.CardFieldTranslation,
+				model.CardFieldContext,
+				model.CardFieldContextTranslation,
+				model.CardFieldDefinition,
+			},
+		},
+	},
+	{
+		ID:               1715808762,
+		Name:             "Lingo EN-RU",
+		SourceLanguage:   "en",
+		TargetLanguage:   "ru",
+		DefaultWord:      "Book",
+		HTMLTemplateName: web.CardPreview,
+		Template: apkg.Model{
+			ID:   1715808527,
+			Name: "lingo_en_ru",
+			Css:  "data/styles.css",
+			Templates: []apkg.Template{
+				{Name: "lingo_en_ru", Qfmt: "data/qfmt.html", Afmt: "data/afmt.html"},
+				{Name: "lingo_en_ru_reversed", Qfmt: "data/qfmt_reversed.html", Afmt: "data/afmt_reversed.html"},
+			},
+			Fields: []string{
+				model.CardFieldWord,
 				model.CardFieldTranscription,
 				model.CardFieldPlural,
 				model.CardFieldTranslation,
