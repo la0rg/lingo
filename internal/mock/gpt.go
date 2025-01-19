@@ -55,7 +55,8 @@ const mockResponse = `
       "transcription": "/ˈkɛːzə/",
       "context": "Ein Stück Käse bitte.",
       "context_translation": "A piece of cheese, please.",
-      "definition": "Ein festes Nahrungsmittel aus Milch, das normalerweise gelb oder weiß ist und einen salzigen Geschmack hat."
+      "definition": "Ein festes Nahrungsmittel aus Milch, das normalerweise gelb oder weiß ist und einen salzigen 
+      Geschmack hat."
     },
     {
       "word": "verrückt",
