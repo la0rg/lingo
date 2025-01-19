@@ -14,3 +14,6 @@ css-watch:
 
 air: up
 	air
+
+lint:
+	golangci-lint run

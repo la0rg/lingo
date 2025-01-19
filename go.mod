@@ -1,6 +1,6 @@
 module github.com/la0rg/lingo
 
-go 1.23.0
+go 1.23
 
 require (
 	github.com/aws/aws-sdk-go v1.51.9

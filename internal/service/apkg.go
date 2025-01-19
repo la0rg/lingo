@@ -27,7 +27,9 @@ func NewAPKG(generator CardGenerator, apkgRepo APKGRepository, cardRepo CardRepo
 	return &APKG{generator: generator, apkgRepo: apkgRepo, cardRepo: cardRepo}
 }
 
-func (s *APKG) CreateOnS3(ctx context.Context, collection *model.Collection, words ...string) (*model.CollectionFile, error) {
+func (s *APKG) CreateOnS3(
+	ctx context.Context, collection *model.Collection, words ...string,
+) (*model.CollectionFile, error) {
 	logger := logger.WithContext(ctx).With("collection", collection.ID, "words", words)
 	logger.Info("Creating an APKG file")
 
@@ -76,7 +78,9 @@ func (s *APKG) CreateOnS3(ctx context.Context, collection *model.Collection, wor
 	}, nil
 }
 
-func (s *APKG) generate(ctx context.Context, logger *slog.Logger, collection *model.Collection, words ...string) ([]model.Card, error) {
+func (s *APKG) generate(
+	ctx context.Context, logger *slog.Logger, collection *model.Collection, words ...string,
+) ([]model.Card, error) {
 	if len(words) == 0 {
 		return nil, nil
 	}
