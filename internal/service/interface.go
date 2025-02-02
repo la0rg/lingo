@@ -7,7 +7,7 @@ import (
 )
 
 type CardGenerator interface {
-	Generate(ctx context.Context, collection *model.Collection, words ...string) ([]model.Card, error)
+	Generate(ctx context.Context, collection *model.Collection, word string) (*model.Card, error)
 }
 
 type CardRepository interface {

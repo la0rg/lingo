@@ -30,7 +30,7 @@ func (n Note) buildCards(deckID int64) []apkgdb.Card {
 
 	for ord := 0; ord < len(n.Model.Templates); ord++ {
 		cards = append(cards, apkgdb.Card{
-			ID:   NewID(), // TODO: check if this is correct
+			ID:   NewID(),
 			Nid:  n.ID,
 			Did:  deckID,
 			Ord:  ord,

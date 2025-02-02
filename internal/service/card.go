@@ -4,15 +4,23 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/sourcegraph/conc/pool"
+
+	"github.com/la0rg/lingo/apkg"
 	"github.com/la0rg/lingo/internal/logger"
 	"github.com/la0rg/lingo/internal/model"
 )
 
-var ErrInvalidWord = fmt.Errorf("card is not created: invalid word")
+const maxWorkers = 10
 
 type Card struct {
 	generator CardGenerator
 	repo      CardRepository
+}
+
+type GetAllResult struct {
+	Cards        []model.Card
+	MissingWords []string
 }
 
 func NewCard(generator CardGenerator, repo CardRepository) *Card {
@@ -35,26 +43,63 @@ func (s *Card) Get(ctx context.Context, collection *model.Collection, word strin
 
 	logger.Info("Card is not found. Generating a new one.")
 
-	cards, err := s.generator.Generate(ctx, collection, word)
+	card, err = s.generator.Generate(ctx, collection, word)
 	if err != nil {
 		return nil, fmt.Errorf("unable to generate a card: %v", err)
 	}
 
-	if len(cards) < 1 {
+	if card == nil {
 		logger.Info("card is not created")
-		return nil, ErrInvalidWord
+		return nil, nil
 	}
 
-	if len(cards) > 1 {
-		logger.Warn("more than one card generated", "cards", cards)
-	}
+	// fill card's metadata
+	card.ID = apkg.NewID()
+	card.CollectionID = collection.ID
 
 	go func() {
 		ctx := context.WithoutCancel(ctx)
-		if err := s.repo.Put(ctx, cards[0]); err != nil {
+		if err := s.repo.Put(ctx, *card); err != nil {
 			logger.Error("Failed to store a card in DB", "error", err)
 		}
 	}()
 
-	return &cards[0], nil
+	return card, nil
+}
+
+type getResult struct {
+	word string
+	card *model.Card
+}
+
+func (s *Card) GetAll(ctx context.Context, collection *model.Collection, words ...string) (*GetAllResult, error) {
+	pool := pool.NewWithResults[getResult]().
+		WithContext(ctx).
+		WithCancelOnError().
+		WithFirstError().
+		WithMaxGoroutines(maxWorkers)
+
+	for _, word := range words {
+		pool.Go(func(ctx context.Context) (getResult, error) {
+			card, err := s.Get(ctx, collection, word)
+			return getResult{word: word, card: card}, err
+		})
+	}
+
+	results, err := pool.Wait()
+	if err != nil {
+		return nil, err
+	}
+
+	var result GetAllResult
+	for _, res := range results {
+		if res.card != nil {
+			result.Cards = append(result.Cards, *res.card)
+			continue
+		}
+
+		result.MissingWords = append(result.MissingWords, res.word)
+	}
+
+	return &result, nil
 }

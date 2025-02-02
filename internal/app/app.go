@@ -67,7 +67,7 @@ func Run(ctx context.Context, conf *config.Config) error {
 	cardRepo := repository.NewCard(db)
 	apkgRepo := repository.NewAPKG(s3, conf)
 	cardService := service.NewCard(generator, cardRepo)
-	apkgService := service.NewAPKG(generator, apkgRepo, cardRepo)
+	apkgService := service.NewAPKG(cardService, apkgRepo)
 
 	router := handler.NewRouter(conf, cardService, apkgService, templates, collectionRepo)
 
