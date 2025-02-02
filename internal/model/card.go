@@ -16,7 +16,7 @@ type Card struct {
 	Gender             string       `json:"gender" dynamodbav:"gender,omitempty" cardfield:"gender"`
 	Transcription      string       `json:"transcription" dynamodbav:"transcription,omitempty" cardfield:"transcription"`
 	Context            string       `json:"context" dynamodbav:"context,omitempty" cardfield:"context"`
-	ContextTranslation string       `json:"context_translation" dynamodbav:"context_translation,omitempty" cardfield:"context_translation"`
+	ContextTranslation string       `json:"context_translation" dynamodbav:"context_translation,omitempty" cardfield:"context_translation"` //nolint:lll
 	Definition         string       `json:"definition" dynamodbav:"definition,omitempty" cardfield:"definition"`
 }
 

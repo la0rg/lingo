@@ -6,51 +6,79 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/sashabaranov/go-openai"
+	oai "github.com/sashabaranov/go-openai"
 
 	"github.com/la0rg/lingo/internal/cardgen/prompt"
 	"github.com/la0rg/lingo/internal/logger"
 	"github.com/la0rg/lingo/internal/model"
 )
 
-const tokenLimit = 2000
+const (
+	tokenLimit  = 1000
+	openAImodel = oai.GPT4o
+	retries     = 2
+	retryDelay  = 100 * time.Millisecond
+)
 
 type OpenAI struct {
 	client GPTClient
 }
 
+type request struct {
+	SourceLanguage string `json:"source_language"`
+	TargetLanguage string `json:"target_language"`
+	Word           string `json:"word"`
+}
+
 type GPTClient interface {
-	CreateChatCompletion(
-		ctx context.Context,
-		request openai.ChatCompletionRequest,
-	) (openai.ChatCompletionResponse, error)
+	CreateChatCompletion(ctx context.Context, request oai.ChatCompletionRequest) (oai.ChatCompletionResponse, error)
 }
 
 func NewOpenAI(client GPTClient) (*OpenAI, error) {
 	return &OpenAI{client: client}, nil
 }
 
-func (g OpenAI) Generate(ctx context.Context, collection *model.Collection, words ...string) ([]model.Card, error) {
+func (g OpenAI) Generate(ctx context.Context, collection *model.Collection, word string) (*model.Card, error) {
 	request, err := json.Marshal(request{
 		SourceLanguage: collection.SourceLanguage,
 		TargetLanguage: collection.TargetLanguage,
-		Words:          words,
+		Word:           word,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("unable to marshal request: %v", err)
 	}
 
+	return g.retryRequest(ctx, string(request))
+}
+
+// retryRequest simply retry to remedy random OpenAI hallucinations
+func (g OpenAI) retryRequest(ctx context.Context, req string) (*model.Card, error) {
+	var card *model.Card
+	var err error
+
+	for i := 0; i <= retries; i++ {
+		card, err = g.makeRequest(ctx, req)
+		if err == nil && card != nil {
+			return card, nil
+		}
+
+		time.Sleep(retryDelay)
+	}
+	return card, err
+}
+
+func (g OpenAI) makeRequest(ctx context.Context, req string) (*model.Card, error) {
 	resp, err := g.client.CreateChatCompletion(
 		ctx,
-		openai.ChatCompletionRequest{
+		oai.ChatCompletionRequest{
 			MaxTokens: tokenLimit,
-			Model:     openai.GPT4o,
-			ResponseFormat: &openai.ChatCompletionResponseFormat{
-				Type: openai.ChatCompletionResponseFormatTypeJSONObject,
+			Model:     openAImodel,
+			ResponseFormat: &oai.ChatCompletionResponseFormat{
+				Type: oai.ChatCompletionResponseFormatTypeJSONObject,
 			},
-			Messages: []openai.ChatCompletionMessage{
-				{Role: openai.ChatMessageRoleSystem, Content: prompt.System},
-				{Role: openai.ChatMessageRoleUser, Content: string(request)},
+			Messages: []oai.ChatCompletionMessage{
+				{Role: oai.ChatMessageRoleSystem, Content: prompt.System},
+				{Role: oai.ChatMessageRoleUser, Content: req},
 			},
 		},
 	)
@@ -63,26 +91,22 @@ func (g OpenAI) Generate(ctx context.Context, collection *model.Collection, word
 	}
 
 	logger.WithContext(ctx).Debug("OpenAI response", "response", resp)
-	if resp.Choices[0].FinishReason != openai.FinishReasonStop {
+	if resp.Choices[0].FinishReason != oai.FinishReasonStop {
 		logger.WithContext(ctx).Warn("Incomplete OpenAI response", "finish_reason", resp.Choices[0].FinishReason)
 	}
 
 	content := []byte(resp.Choices[0].Message.Content)
 
-	var res response
-	if err := json.Unmarshal(content, &res); err != nil {
+	var card model.Card
+	if err := json.Unmarshal(content, &card); err != nil {
 		logger.WithContext(ctx).Warn("OpenAI response is not a valid json", "response", resp.Choices[0].Message.Content)
 		return nil, fmt.Errorf("unable to parse OpenAI response: %v", err)
 	}
 
-	return g.assignCardMetadata(res.Cards, collection.ID), nil
-}
-
-func (g OpenAI) assignCardMetadata(cards []model.Card, collectionID int64) []model.Card {
-	baseID := time.Now().UnixMilli()
-	for i := range cards {
-		cards[i].ID = baseID + int64(i)
-		cards[i].CollectionID = collectionID
+	if card.Word == "" || len(card.Translations) == 0 {
+		logger.WithContext(ctx).Warn("OpenAI response is empty", "response", resp.Choices[0].Message.Content)
+		return nil, nil
 	}
-	return cards
+
+	return &card, nil
 }
