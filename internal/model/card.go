@@ -1,52 +1,53 @@
 package model
 
-import "strings"
+import (
+	"fmt"
+	"reflect"
+	"strings"
+)
 
 type Card struct {
-	ID                 int64         `json:"-" dynamodbav:"id"`
-	Word               string        `json:"word" dynamodbav:"word"`
-	CollectionID       int64         `json:"-" dynamodbav:"collection_id"`
-	Plural             string        `json:"plural" dynamodbav:"plural"`
-	Translations       []Translation `json:"translations" dynamodbav:"translations"`
-	Article            string        `json:"article" dynamodbav:"article,omitempty"`
-	Gender             string        `json:"gender" dynamodbav:"gender,omitempty"`
-	Transcription      string        `json:"transcription" dynamodbav:"transcription,omitempty"`
-	Context            string        `json:"context" dynamodbav:"context,omitempty"`
-	ContextTranslation string        `json:"context_translation" dynamodbav:"context_translation,omitempty"`
-	Definition         string        `json:"definition" dynamodbav:"definition,omitempty"`
-}
-
-func (c Card) AllTranslations() string {
-	translations := make([]string, 0)
-	for _, translation := range c.Translations {
-		translations = append(translations, translation.Translations...)
-	}
-	return strings.Join(translations, ", ")
+	ID                 int64        `json:"-" dynamodbav:"id" cardfield:"id"`
+	Word               string       `json:"word" dynamodbav:"word" cardfield:"word"`
+	CollectionID       int64        `json:"-" dynamodbav:"collection_id" cardfield:"collection_id"`
+	Plural             string       `json:"plural" dynamodbav:"plural" cardfield:"plural"`
+	Translations       Translations `json:"translations" dynamodbav:"translations" cardfield:"translation"`
+	Article            string       `json:"article" dynamodbav:"article,omitempty" cardfield:"article"`
+	Gender             string       `json:"gender" dynamodbav:"gender,omitempty" cardfield:"gender"`
+	Transcription      string       `json:"transcription" dynamodbav:"transcription,omitempty" cardfield:"transcription"`
+	Context            string       `json:"context" dynamodbav:"context,omitempty" cardfield:"context"`
+	ContextTranslation string       `json:"context_translation" dynamodbav:"context_translation,omitempty" cardfield:"context_translation"`
+	Definition         string       `json:"definition" dynamodbav:"definition,omitempty" cardfield:"definition"`
 }
 
 func (c Card) FieldByName(name CardField) string {
-	switch name {
-	case CardFieldWord:
-		return c.Word
-	case CardFieldArticle:
-		return c.Article
-	case CardFieldGender:
-		return c.Gender
-	case CardFieldTranscription:
-		return c.Transcription
-	case CardFieldPlural:
-		return c.Plural
-	case CardFieldTranslation:
-		return c.AllTranslations()
-	case CardFieldContext:
-		return c.Context
-	case CardFieldContextTranslation:
-		return c.ContextTranslation
-	case CardFieldDefinition:
-		return c.Definition
-	default:
-		return ""
+	v := reflect.ValueOf(c)
+	t := v.Type()
+
+	for i := 0; i < t.NumField(); i++ {
+		field := t.Field(i)
+
+		if tag := field.Tag.Get("cardfield"); tag == name {
+			fieldValue := v.Field(i).Interface()
+
+			if stringer, ok := fieldValue.(fmt.Stringer); ok {
+				return stringer.String()
+			}
+
+			return v.Field(i).String()
+		}
 	}
+	return ""
+}
+
+type Translations []Translation
+
+func (t Translations) String() string {
+	str := make([]string, 0)
+	for _, translation := range t {
+		str = append(str, translation.Translations...)
+	}
+	return strings.Join(str, ", ")
 }
 
 type Translation struct {

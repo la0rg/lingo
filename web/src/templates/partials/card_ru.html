@@ -15,7 +15,7 @@
       {{ if .Context }}<div class="anki-mid">{{ .Context }}</div>{{ end }}
       {{ if .Definition }}<div class="anki-small">{{ .Definition }}</div>{{ end}}
       <hr id="answer" class="my-4" />
-      <div class="anki-transl">{{ .AllTranslations }}</div>
+      <div class="anki-transl">{{ .Translations }}</div>
       {{if .ContextTranslation }}<div class="anki-mid">{{ .ContextTranslation }}</div>{{ end }}
     </div>
     <div class="flex items-center justify-center h-64 htmx-indicator">

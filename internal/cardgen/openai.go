@@ -75,12 +75,14 @@ func (g OpenAI) Generate(ctx context.Context, collection *model.Collection, word
 		return nil, fmt.Errorf("unable to parse OpenAI response: %v", err)
 	}
 
-	// TODO: Should it be here?
-	id := time.Now().UnixMilli()
-	for i := range res.Cards {
-		res.Cards[i].ID = id + int64(i)
-		res.Cards[i].CollectionID = collection.ID
-	}
+	return g.assignCardMetadata(res.Cards, collection.ID), nil
+}
 
-	return res.Cards, nil
+func (g OpenAI) assignCardMetadata(cards []model.Card, collectionID int64) []model.Card {
+	baseID := time.Now().UnixMilli()
+	for i := range cards {
+		cards[i].ID = baseID + int64(i)
+		cards[i].CollectionID = collectionID
+	}
+	return cards
 }
