@@ -1,32 +1,28 @@
 <form id="language-selector" class="z-10">
-    <ul class="menu menu-horizontal bg-base-200 rounded-btn">
+    <ul class="menu menu-horizontal bg-base-200 rounded-lg">
         <li>
             <details id="source-language">
-            {{ range .Languages -}}
-            {{ if eq .CountryCode $.SourceCountryCode }}
-            <summary>
-                Study:
-                <input type="hidden" name="source" value="{{ .CountryCode }}">
-                <span class="fi fi-{{ .Flag }}"></span>
-            </summary>
-            {{ end }}
-            {{- end }}
-            <ul>
                 {{ range .Languages -}}
-                <li>
-                <button 
-                    type="submit" 
-                    {{ if eq .CountryCode $.SourceCountryCode -}}class="active cursor-pointer"{{- end }}
-                    hx-post="/language"
-                    hx-target="#language-selector"
-                    hx-swap="outerHTML"
-                    hx-vals='{"sourceNew": "{{ .CountryCode }}"}'
-                    >
-                    <span class="fi fi-{{ .Flag }}"></span>{{ .Name }}
-                </button>
-                </li>
+                {{ if eq .CountryCode $.SourceCountryCode }}
+                <summary>
+                    Study:
+                    <input type="hidden" name="source" value="{{ .CountryCode }}">
+                    <span class="fi fi-{{ .Flag }} 123"></span>
+                </summary>
+                {{ end }}
                 {{- end }}
-            </ul>
+                <ul>
+                    {{ range .Languages -}}
+                    <li>
+                        <button type="submit" {{ if eq .CountryCode $.SourceCountryCode
+                            -}}class="menu-active cursor-pointer" {{- end }} hx-post="/language"
+                            hx-target="#language-selector" hx-swap="outerHTML"
+                            hx-vals='{"sourceNew": "{{ .CountryCode }}"}'>
+                            <span class="fi fi-{{ .Flag }}"></span>{{ .Name }}
+                        </button>
+                    </li>
+                    {{- end }}
+                </ul>
             </details>
         </li>
         <li>
@@ -41,20 +37,16 @@
                 {{ end }}
                 {{- end }}
                 <ul>
-                {{ range .Languages -}}
-                <li>
-                    <button 
-                    type="submit" 
-                    {{ if eq .CountryCode $.TargetCountryCode }}class="active cursor-pointer"{{ end }}
-                    hx-post="/language"
-                    hx-target="#language-selector"
-                    hx-swap="outerHTML"
-                    hx-vals='{"targetNew": "{{ .CountryCode }}"}'
-                    >
-                    <span class="fi fi-{{ .Flag }}"></span>{{ .Name }}
-                </button>
-                </li>
-                {{- end }}
+                    {{ range .Languages -}}
+                    <li>
+                        <button type="submit" {{ if eq .CountryCode $.TargetCountryCode}}
+                            class="menu-active cursor-pointer" {{ end }} hx-post="/language"
+                            hx-target="#language-selector" hx-swap="outerHTML"
+                            hx-vals='{"targetNew": "{{ .CountryCode }}"}'>
+                            <span class="fi fi-{{ .Flag }}"></span>{{ .Name }}
+                        </button>
+                    </li>
+                    {{- end }}
                 </ul>
             </details>
         </li>
