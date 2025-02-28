@@ -1,6 +1,27 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss" source(none);
+@source "../../src";
+
+@plugin "daisyui" {
+  themes: dim;
+}
+
+@plugin "daisyui/theme" {
+  name: "sunset";
+  default: true;
+  color-scheme: "dark";
+  --color-primary: oklch(58% 0.233 277.117);
+  --color-primary-content: oklch(96% 0.018 272.314);
+  --color-secondary: oklch(65% 0.241 354.308);
+  --color-secondary-content: oklch(94% 0.028 342.258);
+  --color-accent: oklch(77% 0.152 181.912);
+  --color-accent-content: oklch(38% 0.063 188.416);
+}
+
+
+@theme {
+  --font-main: "Open Sans", "ui-sans-serif", "system-ui", "sans-serif";
+  --font-title: "Raleway", "sans-serif", "system-ui";
+}
 
 /* ANKI card classes */
 
@@ -63,15 +84,19 @@
 .htmx-indicator {
   display: none;
 }
+
 .htmx-request .htmx-indicator {
   display: flex;
 }
+
 .htmx-request.htmx-indicator {
   display: flex;
 }
+
 .htmx-request .htmx-content {
   display: none;
 }
+
 .htmx-request.htmx-content {
   display: none;
 }
@@ -80,9 +105,11 @@
 .htmx-added .fade-me-in {
   opacity: 0;
 }
+
 .htmx-added.fade-me-in {
   opacity: 0;
 }
+
 .fade-me-in {
   opacity: 1;
   transition: opacity 1s ease-out;

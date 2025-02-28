@@ -3,34 +3,28 @@
 <script src="/public/js/copy_apkg.js"></script>
 <main class="flex-1" hx-ext="response-targets">
     <div class="container mx-auto py-12">
-        <div class="card bg-neutral text-neutral-content mx-4">
+        <div class="card bg-neutral mx-4">
             <div class="card-body">
                 <h2 class="text-2xl mb-2 text-primary">Create a collection</h2>
                 <ul class="list-disc mb-4 px-4">
                     <li>Enter the words you want to learn</li>
-                    <li>Download an APKG file, pre-configured for immediate use in Anki</li>  
+                    <li>Download an APKG file, pre-configured for immediate use in Anki</li>
                     <li>To expand an existing collection, enter new words and import the file into Anki</li>
                 </ul>
-                <form 
-                    hx-post="/collection"
-                    hx-include="#language-selector"
-                    hx-target="#collection-footer"
-                    hx-swap="outerHTML"
-                    hx-disabled-elt="#words"
-                    hx-target-error="#collection-error"
-                    class="space-y-6"
-                >
-                    <label class="form-control">
-                        <div class="label">
-                            <span class="label-text"></span>
-                            <span class="label-text-alt text-info">*use comma or newline as delimiter</span>
-                        </div>
-                        <textarea id="words" name="words" class="textarea textarea-bordered textarea-lg w-full" required autofocus></textarea>
-                    </label>
+                <form hx-post="/collection" hx-include="#language-selector" hx-target="#collection-footer"
+                    hx-swap="outerHTML" hx-disabled-elt="#words" hx-target-error="#collection-error"
+                    class="flex flex-col gap-4">
+                    <fieldset class="fieldset">
+                        <label for="words" class="fieldset-label text-info ml-auto mr-0">
+                            *comma or new line to split words
+                        </label>
+                        <textarea id="words" name="words" class="textarea textarea-neutral textarea-lg w-full" required
+                            autofocus></textarea>
+                    </fieldset>
                     <div id="collection-footer" class="space-y-4">
                         <div id="collection-error" class="w-full"></div>
                         <div class="flex flex-col items-center justify-center htmx-indicator">
-                            <span class="mb-2">Just a moment — we're creating your collection!</span>    
+                            <span class="mb-2">Just a moment — we're creating your collection!</span>
                             <span class="loading loading-ring loading-lg"></span>
                         </div>
                         <div id="actions" class="card-actions justify-center htmx-content">
