@@ -2,33 +2,112 @@ package handler
 
 import (
 	"context"
+	"math"
 	"net"
 	"net/http"
 	"net/netip"
+	"strconv"
 	"strings"
+	"sync"
 	"time"
 
-	"github.com/go-chi/httprate"
+	"golang.org/x/time/rate"
 
 	"github.com/la0rg/lingo/internal/config"
 )
 
 // wordLimiter limits how many words a client can request per minute on the public endpoints.
 // Every word may cost an OpenAI call, so the limit counts words rather than requests.
+// Each client gets a token bucket that holds up to a minute's worth of words and refills continuously.
 type wordLimiter struct {
-	rl *httprate.RateLimiter
+	limit rate.Limit
+	burst int
+
+	mu        sync.Mutex
+	clients   map[string]*clientLimiter
+	lastSweep time.Time
 }
 
+type clientLimiter struct {
+	limiter  *rate.Limiter
+	lastSeen time.Time
+}
+
+// idleTTL is the time an unused bucket needs to refill completely. A full bucket is the same as a new one,
+// so it can be dropped without changing the outcome of later requests.
+const idleTTL = time.Minute
+
 func newWordLimiter(wordsPerMinute int) *wordLimiter {
-	return &wordLimiter{rl: httprate.NewRateLimiter(wordsPerMinute, time.Minute)}
+	limit := rate.Inf
+	if wordsPerMinute > 0 {
+		limit = rate.Limit(float64(wordsPerMinute) / idleTTL.Seconds())
+	}
+
+	return &wordLimiter{
+		limit:   limit,
+		burst:   wordsPerMinute,
+		clients: make(map[string]*clientLimiter),
+	}
 }
 
 // Allow reports whether the client may request n more words and, if so, counts them.
+// When it returns false, it sets the Retry-After header.
 // The client IP is resolved by the clientIP middleware.
 func (l *wordLimiter) Allow(w http.ResponseWriter, r *http.Request, n int) bool {
-	key := httprate.CanonicalizeIP(clientIPFromContext(r.Context()))
-	r = r.WithContext(httprate.WithIncrement(r.Context(), n))
-	return !l.rl.OnLimit(w, r, key)
+	if l.limit == rate.Inf {
+		return true
+	}
+
+	now := time.Now()
+	limiter := l.client(limiterKey(clientIPFromContext(r.Context())), now)
+
+	reservation := limiter.ReserveN(now, n)
+	if !reservation.OK() { // more words than the bucket can ever hold
+		w.Header().Set("Retry-After", strconv.Itoa(int(idleTTL.Seconds())))
+		return false
+	}
+
+	if delay := reservation.DelayFrom(now); delay > 0 {
+		reservation.CancelAt(now) // the request is rejected, give the tokens back
+		w.Header().Set("Retry-After", strconv.Itoa(int(math.Ceil(delay.Seconds()))))
+		return false
+	}
+
+	return true
+}
+
+// client returns the client's bucket, creating it if needed, and drops buckets of idle clients.
+func (l *wordLimiter) client(key string, now time.Time) *rate.Limiter {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+
+	if now.Sub(l.lastSweep) >= idleTTL {
+		for k, c := range l.clients {
+			if now.Sub(c.lastSeen) >= idleTTL {
+				delete(l.clients, k)
+			}
+		}
+		l.lastSweep = now
+	}
+
+	c, ok := l.clients[key]
+	if !ok {
+		c = &clientLimiter{limiter: rate.NewLimiter(l.limit, l.burst)}
+		l.clients[key] = c
+	}
+	c.lastSeen = now
+
+	return c.limiter
+}
+
+// limiterKey groups IPv6 clients by /64, the usual size of a single customer's allocation,
+// so a client can't bypass the limit by rotating addresses within it.
+func limiterKey(ip string) string {
+	addr, err := netip.ParseAddr(ip)
+	if err != nil || !addr.Is6() {
+		return ip
+	}
+	return netip.PrefixFrom(addr, 64).Masked().String()
 }
 
 type clientIPKey struct{}

@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/la0rg/lingo/internal/config"
 )
@@ -125,4 +126,93 @@ func TestResolveClientIP(t *testing.T) {
 			assert.Equal(t, c.want, resolveClientIP(req, c.header, c.proxies))
 		})
 	}
+}
+
+func TestWordLimiter_GroupsIPv6By64(t *testing.T) {
+	t.Parallel()
+
+	synctest.Test(t, func(t *testing.T) {
+		l := newWordLimiter(1)
+		limits := config.Limits{}
+
+		assert.True(t, limitedRequest(limits, l, "[2001:db8:1:2::1]:1", "", 1))
+		assert.False(t, limitedRequest(limits, l, "[2001:db8:1:2:ffff::9]:1", "", 1), "same /64 shares the limit")
+		assert.True(t, limitedRequest(limits, l, "[2001:db8:1:3::1]:1", "", 1), "other /64 is another client")
+	})
+}
+
+func TestLimiterKey(t *testing.T) {
+	t.Parallel()
+
+	assert.Equal(t, "192.0.2.1", limiterKey("192.0.2.1"))
+	assert.Equal(t, "2001:db8:1:2::/64", limiterKey("2001:db8:1:2:abcd::1"))
+	assert.Equal(t, "", limiterKey(""))
+}
+
+func TestWordLimiter_RetryAfter(t *testing.T) {
+	t.Parallel()
+
+	synctest.Test(t, func(t *testing.T) {
+		l := newWordLimiter(5) // one word every 12 seconds
+		allow := func(n int) (bool, string) {
+			rec := httptest.NewRecorder()
+			req := httptest.NewRequest(http.MethodGet, "/", nil)
+			var ok bool
+			clientIP(config.Limits{})(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				ok = l.Allow(w, r, n)
+			})).ServeHTTP(rec, req)
+			return ok, rec.Header().Get("Retry-After")
+		}
+
+		ok, _ := allow(5)
+		require.True(t, ok)
+
+		ok, retryAfter := allow(1)
+		assert.False(t, ok)
+		assert.Equal(t, "12", retryAfter)
+
+		ok, retryAfter = allow(3)
+		assert.False(t, ok)
+		assert.Equal(t, "36", retryAfter, "rejected requests don't consume words")
+
+		ok, retryAfter = allow(6)
+		assert.False(t, ok)
+		assert.Equal(t, "60", retryAfter, "more than the limit is never allowed")
+
+		time.Sleep(12 * time.Second)
+		ok, _ = allow(1)
+		assert.True(t, ok, "words refill continuously")
+	})
+}
+
+func TestWordLimiter_DropsIdleClients(t *testing.T) {
+	t.Parallel()
+
+	synctest.Test(t, func(t *testing.T) {
+		l := newWordLimiter(2)
+		limits := config.Limits{}
+
+		limitedRequest(limits, l, "192.0.2.1:1", "", 2)
+		limitedRequest(limits, l, "192.0.2.2:1", "", 1)
+		assert.Len(t, l.clients, 2)
+
+		time.Sleep(30 * time.Second)
+		limitedRequest(limits, l, "192.0.2.3:1", "", 1)
+		assert.Len(t, l.clients, 3, "clients are kept until their bucket refills")
+
+		time.Sleep(40 * time.Second)
+		limitedRequest(limits, l, "192.0.2.3:1", "", 1)
+		assert.Len(t, l.clients, 1)
+		assert.Contains(t, l.clients, "192.0.2.3")
+
+		assert.True(t, limitedRequest(limits, l, "192.0.2.1:1", "", 2), "a dropped client starts with a full bucket")
+	})
+}
+
+func TestWordLimiter_Disabled(t *testing.T) {
+	t.Parallel()
+
+	l := newWordLimiter(0)
+	assert.True(t, limitedRequest(config.Limits{}, l, "192.0.2.1:1", "", 1000))
+	assert.Empty(t, l.clients)
 }
