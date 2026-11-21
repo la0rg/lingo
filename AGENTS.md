@@ -26,7 +26,7 @@ Production: https://lingo.lanbin.dev, behind Cloudflare.
 main.go -> internal/app (wiring)
   internal/handler     HTTP: net/http ServeMux, middleware, htmx pages + JSON API, errors as *HTTPError
   internal/service     business logic: Card (DB cache -> generate -> store), APKG (build + upload)
-  internal/cardgen     OpenAI adapter (openai-go v3, structured outputs); prompt in prompt/system.md.tmpl
+  internal/cardgen     OpenAI adapter (openai-go v3, structured outputs); prompt in prompt/system.md
   internal/repository  DynamoDB (cards cache, table lingo_cards), S3 (apkg files), collections (static)
   internal/model       domain types + request validation (APKGRequest.Normalize/Validate)
   internal/config      viper config: config.yaml or env vars (key path uppercased, "." -> "_")
@@ -52,7 +52,8 @@ Routes: public `/`, `/card`, `/collection`, `/language` (HTML via htmx). Bearer-
 - Tests: testify, table-driven, `t.Parallel()`. Use `testing/synctest` to control time, not injected clocks.
   DynamoDB tests that need a real server use the `integration` build tag.
 - Configure components with functional options (see `cardgen.WithModel`).
-- Prompts live in embedded `*.md.tmpl` files, never as prose in Go code.
+- Prompts live in embedded `*.md` files, never as prose in Go code. Switch to `*.md.tmpl` + `text/template`
+  only once a prompt needs variables.
 
 ## Gotchas
 

@@ -38,7 +38,6 @@ type OpenAI struct {
 	client          GPTClient
 	model           string
 	reasoningEffort shared.ReasoningEffort
-	systemPrompt    string
 }
 
 type Option func(*OpenAI)
@@ -54,16 +53,10 @@ func WithReasoningEffort(effort string) Option {
 }
 
 func NewOpenAI(client GPTClient, opts ...Option) (*OpenAI, error) {
-	systemPrompt, err := prompt.System()
-	if err != nil {
-		return nil, fmt.Errorf("unable to render system prompt: %w", err)
-	}
-
 	g := &OpenAI{
 		client:          client,
 		model:           DefaultModel,
 		reasoningEffort: DefaultReasoningEffort,
-		systemPrompt:    systemPrompt,
 	}
 	for _, opt := range opts {
 		opt(g)
@@ -145,7 +138,7 @@ func (g *OpenAI) params(req string) openai.ChatCompletionNewParams {
 			},
 		},
 		Messages: []openai.ChatCompletionMessageParamUnion{
-			openai.SystemMessage(g.systemPrompt),
+			openai.SystemMessage(prompt.System),
 			openai.UserMessage(req),
 		},
 	}
