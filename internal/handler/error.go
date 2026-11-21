@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/la0rg/lingo/internal/logger"
+	"github.com/la0rg/lingo/internal/model"
 	"github.com/la0rg/lingo/web"
 )
 
@@ -105,6 +106,26 @@ func (h *handlers) ErrorHandlerHTML(handler HandlerFunc) http.HandlerFunc {
 		if err := h.HTML(w, r, web.Error, httpErr); err != nil {
 			logger.WithContext(r.Context()).Error("unable to render error page", "error", err)
 		}
+	}
+}
+
+// requestError maps a request validation error to an HTTP error.
+func requestError(err error) error {
+	var tooMany *model.TooManyWordsError
+	var tooLong *model.WordTooLongError
+	var maxBytes *http.MaxBytesError
+
+	switch {
+	case errors.Is(err, model.ErrEmptyWordList):
+		return ErrEmptyWordList
+	case errors.As(err, &tooMany):
+		return ErrTooManyWords(tooMany.Max)
+	case errors.As(err, &tooLong):
+		return ErrWordTooLong(tooLong.Max)
+	case errors.As(err, &maxBytes):
+		return ErrBodyTooLarge
+	default:
+		return BadRequest("Invalid request format")
 	}
 }
 

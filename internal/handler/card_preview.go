@@ -23,11 +23,11 @@ func (h *handlers) CardPreview(w http.ResponseWriter, r *http.Request) error {
 		return ErrEmptyWord
 	}
 
-	if err := h.validateWords(word); err != nil {
-		return err
+	if err := model.ValidateWord(word, h.conf.Limits.MaxWordLength); err != nil {
+		return requestError(err)
 	}
 
-	if !h.limiter.Allow(r, 1) {
+	if !h.limiter.Allow(w, r, 1) {
 		return ErrRateLimited
 	}
 

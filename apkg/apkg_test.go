@@ -43,7 +43,7 @@ func TestBuild(t *testing.T) {
 		}},
 	}
 
-	result, err := Build(collection)
+	result, err := Build(&collection)
 	assert.NoError(t, err)
 
 	err = os.WriteFile("test.apkg", result, 0644)

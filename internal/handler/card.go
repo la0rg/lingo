@@ -5,6 +5,8 @@ import (
 	"strings"
 
 	"github.com/go-chi/chi/v5"
+
+	"github.com/la0rg/lingo/internal/model"
 )
 
 func (h *handlers) Card(w http.ResponseWriter, r *http.Request) error {
@@ -20,8 +22,8 @@ func (h *handlers) Card(w http.ResponseWriter, r *http.Request) error {
 		return ErrEmptyWord
 	}
 
-	if err := h.validateWords(word); err != nil {
-		return err
+	if err := model.ValidateWord(word, h.conf.Limits.MaxWordLength); err != nil {
+		return requestError(err)
 	}
 
 	card, err := h.card.Get(r.Context(), collection, word)

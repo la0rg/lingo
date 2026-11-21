@@ -13,7 +13,7 @@ const languageCookie = "language"
 
 func (h *handlers) Language(w http.ResponseWriter, r *http.Request) error {
 	if err := r.ParseForm(); err != nil {
-		return formError(err)
+		return requestError(err)
 	}
 
 	source, target := r.Form.Get("source"), r.Form.Get("target")

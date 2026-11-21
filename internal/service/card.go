@@ -18,11 +18,6 @@ type Card struct {
 	repo      CardRepository
 }
 
-type GetAllResult struct {
-	Cards        []model.Card
-	MissingWords []string
-}
-
 func NewCard(generator CardGenerator, repo CardRepository) *Card {
 	return &Card{generator: generator, repo: repo}
 }
@@ -72,7 +67,9 @@ type getResult struct {
 	card *model.Card
 }
 
-func (s *Card) GetAll(ctx context.Context, collection *model.Collection, words ...string) (*GetAllResult, error) {
+func (s *Card) GetAll(
+	ctx context.Context, collection *model.Collection, words ...string,
+) (*model.GetAllResult, error) {
 	pool := pool.NewWithResults[getResult]().
 		WithContext(ctx).
 		WithCancelOnError().
@@ -91,7 +88,7 @@ func (s *Card) GetAll(ctx context.Context, collection *model.Collection, words .
 		return nil, err
 	}
 
-	var result GetAllResult
+	var result model.GetAllResult
 	for _, res := range results {
 		if res.card != nil {
 			result.Cards = append(result.Cards, *res.card)

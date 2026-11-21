@@ -2,7 +2,6 @@ package handler
 
 import (
 	"encoding/json"
-	"errors"
 	"net/http"
 	"strings"
 
@@ -21,23 +20,15 @@ func (h *handlers) APKG(w http.ResponseWriter, r *http.Request) error {
 
 	var request model.APKGRequest
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
-		var maxBytesErr *http.MaxBytesError
-		if errors.As(err, &maxBytesErr) {
-			return ErrBodyTooLarge
-		}
-		return BadRequest("invalid request format")
+		return requestError(err)
 	}
 
-	words := normalizeWords(request.Words)
-	if len(words) == 0 {
-		return BadRequest("no words provided")
+	request.Normalize()
+	if err := request.Validate(h.conf.Limits.MaxWords, h.conf.Limits.MaxWordLength); err != nil {
+		return requestError(err)
 	}
 
-	if err := h.validateWords(words...); err != nil {
-		return err
-	}
-
-	file, err := h.apkg.CreateOnS3(r.Context(), collection, words...)
+	file, err := h.apkg.CreateOnS3(r.Context(), collection, request.Words...)
 	if err != nil {
 		return err
 	}

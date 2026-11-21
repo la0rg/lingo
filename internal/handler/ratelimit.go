@@ -1,93 +1,37 @@
 package handler
 
 import (
-	"net"
 	"net/http"
-	"strings"
-	"sync"
 	"time"
 
-	"golang.org/x/time/rate"
+	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/httprate"
+
+	"github.com/la0rg/lingo/internal/config"
 )
 
-const (
-	limiterIdleTTL       = 10 * time.Minute
-	limiterSweepInterval = time.Minute
-)
-
-// WordLimiter rate-limits the number of words a single client can request.
-// Every word may cost an OpenAI call, so the limit is in words rather than in requests.
-type WordLimiter struct {
-	mu        sync.Mutex
-	clients   map[string]*clientLimiter
-	limit     rate.Limit
-	burst     int
-	ipHeader  string
-	now       func() time.Time
-	lastSweep time.Time
+// wordLimiter limits how many words a client can request per minute on the public endpoints.
+// Every word may cost an OpenAI call, so the limit counts words rather than requests.
+type wordLimiter struct {
+	rl *httprate.RateLimiter
 }
 
-type clientLimiter struct {
-	limiter  *rate.Limiter
-	lastSeen time.Time
+func newWordLimiter(wordsPerMinute int) *wordLimiter {
+	return &wordLimiter{rl: httprate.NewRateLimiter(wordsPerMinute, time.Minute)}
 }
 
-// NewWordLimiter creates a limiter that allows wordsPerMinute words per client, with the given burst.
-// ipHeader is an optional trusted proxy header holding the client IP.
-func NewWordLimiter(wordsPerMinute, burst int, ipHeader string) *WordLimiter {
-	return &WordLimiter{
-		clients:  make(map[string]*clientLimiter),
-		limit:    rate.Limit(float64(wordsPerMinute) / 60),
-		burst:    burst,
-		ipHeader: ipHeader,
-		now:      time.Now,
-	}
+// Allow reports whether the client may request n more words and, if so, counts them.
+// It relies on one of the chi ClientIPFrom* middlewares to resolve the client IP.
+func (l *wordLimiter) Allow(w http.ResponseWriter, r *http.Request, n int) bool {
+	key := httprate.CanonicalizeIP(middleware.GetClientIP(r.Context()))
+	r = r.WithContext(httprate.WithIncrement(r.Context(), n))
+	return !l.rl.OnLimit(w, r, key)
 }
 
-// Allow reports whether the client making r may request n more words.
-func (l *WordLimiter) Allow(r *http.Request, n int) bool {
-	key := l.clientIP(r)
-	now := l.now()
-
-	l.mu.Lock()
-	defer l.mu.Unlock()
-
-	l.sweep(now)
-
-	c, ok := l.clients[key]
-	if !ok {
-		c = &clientLimiter{limiter: rate.NewLimiter(l.limit, l.burst)}
-		l.clients[key] = c
+// clientIP resolves the client IP from a trusted proxy header when configured, from RemoteAddr otherwise.
+func clientIP(limits config.Limits) func(http.Handler) http.Handler {
+	if limits.ClientIPHeader == "" {
+		return middleware.ClientIPFromRemoteAddr
 	}
-	c.lastSeen = now
-
-	return c.limiter.AllowN(now, n)
-}
-
-// sweep drops limiters of clients that have been idle for a while. It must be called with l.mu held.
-func (l *WordLimiter) sweep(now time.Time) {
-	if now.Sub(l.lastSweep) < limiterSweepInterval {
-		return
-	}
-	l.lastSweep = now
-
-	for key, c := range l.clients {
-		if now.Sub(c.lastSeen) > limiterIdleTTL {
-			delete(l.clients, key)
-		}
-	}
-}
-
-func (l *WordLimiter) clientIP(r *http.Request) string {
-	if l.ipHeader != "" {
-		if ip := strings.TrimSpace(r.Header.Get(l.ipHeader)); ip != "" {
-			return ip
-		}
-	}
-
-	host, _, err := net.SplitHostPort(r.RemoteAddr)
-	if err != nil {
-		return r.RemoteAddr
-	}
-	return host
+	return middleware.ClientIPFromHeader(limits.ClientIPHeader, limits.TrustedProxies...)
 }

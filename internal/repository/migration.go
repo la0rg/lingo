@@ -35,10 +35,10 @@ var cardsTableSchema = &dynamodb.CreateTableInput{
 }
 
 type Migration struct {
-	client *dynamodb.Client
+	client DynamoAPI
 }
 
-func NewMigration(client *dynamodb.Client) Migration {
+func NewMigration(client DynamoAPI) Migration {
 	return Migration{client: client}
 }
 
@@ -81,7 +81,7 @@ func (m Migration) tableExists(ctx context.Context, tableName string) (bool, err
 }
 
 func (m Migration) createTable(ctx context.Context, input *dynamodb.CreateTableInput) error {
-	slog.Info("Creating table", "table", input.TableName)
+	slog.Info("Creating table", "table", aws.ToString(input.TableName))
 
 	_, err := m.client.CreateTable(ctx, input)
 	if err != nil {

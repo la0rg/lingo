@@ -12,14 +12,26 @@ import (
 	"github.com/la0rg/lingo/internal/model"
 )
 
+// DynamoAPI is the subset of the DynamoDB client used by the repositories.
+type DynamoAPI interface {
+	GetItem(ctx context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (
+		*dynamodb.GetItemOutput, error)
+	PutItem(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (
+		*dynamodb.PutItemOutput, error)
+	DescribeTable(ctx context.Context, params *dynamodb.DescribeTableInput, optFns ...func(*dynamodb.Options)) (
+		*dynamodb.DescribeTableOutput, error)
+	CreateTable(ctx context.Context, params *dynamodb.CreateTableInput, optFns ...func(*dynamodb.Options)) (
+		*dynamodb.CreateTableOutput, error)
+}
+
 type Card struct {
 	partitionKey string
 	sortKey      string
 
-	client *dynamodb.Client
+	client DynamoAPI
 }
 
-func NewCard(client *dynamodb.Client) *Card {
+func NewCard(client DynamoAPI) *Card {
 	return &Card{
 		partitionKey: "key",
 		sortKey:      "collection_id",

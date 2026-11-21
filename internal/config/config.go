@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"net/netip"
 	"reflect"
 	"strings"
 
@@ -27,14 +28,30 @@ type Limits struct {
 	MaxWords int
 	// MaxWordLength is the maximum length of a single word, in runes.
 	MaxWordLength int
-	// WordsPerMinute is the per-client rate of words accepted by the public (unauthenticated) endpoints.
+	// WordsPerMinute is the per-client number of words accepted by the public (unauthenticated) endpoints.
+	// It must be >= MaxWords.
 	WordsPerMinute int
-	// WordsBurst is the number of words a client can request at once. It must be >= MaxWords.
-	WordsBurst int
-	// ClientIPHeader is a trusted proxy header that holds the client IP (e.g. "Cf-Connecting-IP").
-	// Leave it empty to use the TCP remote address. Set it only when the origin is reachable through the proxy alone,
-	// otherwise clients can spoof it.
+	// ClientIPHeader is a proxy header that holds the client IP (e.g. "CF-Connecting-IP").
+	// Leave it empty to use the TCP remote address.
 	ClientIPHeader string
+	// TrustedProxies are the CIDR prefixes of the proxy. ClientIPHeader is read only for requests coming from them.
+	// Leave it empty only if the network guarantees that the proxy is the only way to reach the server.
+	TrustedProxies []string
+}
+
+// Validate checks that the limits are consistent.
+func (l Limits) Validate() error {
+	if l.WordsPerMinute < l.MaxWords {
+		return fmt.Errorf("limits.wordsperminute (%d) must be >= limits.maxwords (%d)", l.WordsPerMinute, l.MaxWords)
+	}
+
+	for _, prefix := range l.TrustedProxies {
+		if _, err := netip.ParsePrefix(prefix); err != nil {
+			return fmt.Errorf("invalid limits.trustedproxies prefix %q: %w", prefix, err)
+		}
+	}
+
+	return nil
 }
 
 const redacted = "[REDACTED]"
@@ -96,7 +113,6 @@ func Load() (*Config, error) {
 			MaxWords:       100,
 			MaxWordLength:  64,
 			WordsPerMinute: 200,
-			WordsBurst:     200,
 		},
 	}
 
@@ -118,9 +134,8 @@ func Load() (*Config, error) {
 		return nil, fmt.Errorf("unable to unmarshal config: %w", err)
 	}
 
-	if conf.Limits.WordsBurst < conf.Limits.MaxWords {
-		return nil, fmt.Errorf("limits.wordsburst (%d) must be >= limits.maxwords (%d)",
-			conf.Limits.WordsBurst, conf.Limits.MaxWords)
+	if err := conf.Limits.Validate(); err != nil {
+		return nil, err
 	}
 
 	return &conf, nil

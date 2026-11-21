@@ -27,7 +27,7 @@ func NewAPKG(card CardGetter, apkgRepo APKGRepository) *APKG {
 }
 
 type CardGetter interface {
-	GetAll(ctx context.Context, collection *model.Collection, words ...string) (*GetAllResult, error)
+	GetAll(ctx context.Context, collection *model.Collection, words ...string) (*model.GetAllResult, error)
 }
 
 func (s *APKG) CreateOnS3(

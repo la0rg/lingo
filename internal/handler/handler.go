@@ -28,7 +28,7 @@ type CollectionGetter interface {
 
 type handlers struct {
 	conf       *config.Config
-	limiter    *WordLimiter
+	limiter    *wordLimiter
 	card       CardService
 	apkg       APKGService
 	tmpl       TemplateRenderer
@@ -44,7 +44,7 @@ func NewRouter(
 ) http.Handler {
 	handlers := handlers{
 		conf:       conf,
-		limiter:    NewWordLimiter(conf.Limits.WordsPerMinute, conf.Limits.WordsBurst, conf.Limits.ClientIPHeader),
+		limiter:    newWordLimiter(conf.Limits.WordsPerMinute),
 		card:       card,
 		apkg:       apkg,
 		tmpl:       tmpl,
@@ -53,7 +53,7 @@ func NewRouter(
 	publicHandler := http.FileServer(http.FS(web.PublicFS))
 
 	r := chi.NewRouter()
-	r.Use(RequestLogger, RequestID, Recoverer, SecurityHeaders, MaxBodySize(maxBodyBytes))
+	r.Use(RequestLogger, RequestID, Recoverer, SecurityHeaders, MaxBodySize(maxBodyBytes), clientIP(conf.Limits))
 	r.Get("/version", ErrorHandler(handlers.Version))
 
 	r.Route("/api/collections/{collection}", func(r chi.Router) {
