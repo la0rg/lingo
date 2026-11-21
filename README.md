@@ -77,6 +77,9 @@ The generated file can be directly imported into the Anki app to add the flashca
 }
 ```
 
+Words are trimmed, lowercased and deduplicated. A request accepts up to `limits.maxwords` words (default 100)
+of up to `limits.maxwordlength` characters (default 64).
+
 **Response:**
 ```json
 {
@@ -87,7 +90,7 @@ The generated file can be directly imported into the Anki app to add the flashca
 ## Development
 
 ### Prerequisites
-- Go 1.24 or higher
+- Go 1.26 or higher
 - Docker
 - Node.js (for TailwindCSS)
 
@@ -108,6 +111,25 @@ By default, the application runs with a mocked OpenAI API for development purpos
      openaikey: "your-api-key"
      mockopenai: false
      ```
+
+Cards are generated with `gpt-6-luna` and reasoning effort `none` by default. Override them with
+`openaimodel` / `openaireasoningeffort` (env `OPENAIMODEL` / `OPENAIREASONINGEFFORT`).
+
+### Abuse Limits
+Every new word costs an OpenAI call, so the public endpoints are limited per client IP:
+
+| Key (env) | Default | Meaning |
+|---|---|---|
+| `limits.maxwords` (`LIMITS_MAXWORDS`) | 100 | words per request |
+| `limits.maxwordlength` (`LIMITS_MAXWORDLENGTH`) | 64 | characters per word |
+| `limits.wordsperminute` (`LIMITS_WORDSPERMINUTE`) | 200 | words per client per minute |
+| `limits.clientipheader` (`LIMITS_CLIENTIPHEADER`) | empty (TCP address) | proxy header with the client IP, e.g. `CF-Connecting-IP` |
+| `limits.trustedproxies` (`LIMITS_TRUSTEDPROXIES`) | empty | comma-separated proxy CIDRs; the header is read only from these |
+
+### Tests
+- `make test`: unit tests
+- `make up && make test-integration`: DynamoDB Local integration tests
+- `OPENAIKEY=... go test -tags live -v ./internal/cardgen/`: smoke test against the real OpenAI API
 
 
 ### Live Reload
