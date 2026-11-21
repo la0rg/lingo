@@ -16,10 +16,14 @@ type Config struct {
 	Port       int
 	MockOpenAI bool
 	OpenAIKey  string
-	APIKeys    []string
-	Dynamo     AWS
-	S3         S3
-	Limits     Limits
+	// OpenAIModel overrides the default card generation model (cardgen.DefaultModel).
+	OpenAIModel string
+	// OpenAIReasoningEffort overrides the default reasoning effort (cardgen.DefaultReasoningEffort).
+	OpenAIReasoningEffort string
+	APIKeys               []string
+	Dynamo                AWS
+	S3                    S3
+	Limits                Limits
 }
 
 // Limits protect the paid OpenAI-backed endpoints from abuse.
@@ -63,6 +67,8 @@ func (c Config) LogValue() slog.Value {
 		slog.Int("port", c.Port),
 		slog.Bool("mockopenai", c.MockOpenAI),
 		slog.String("openaikey", redactString(c.OpenAIKey)),
+		slog.String("openaimodel", c.OpenAIModel),
+		slog.String("openaireasoningeffort", c.OpenAIReasoningEffort),
 		slog.Int("apikeys_count", len(c.APIKeys)),
 		slog.Any("dynamo", c.Dynamo),
 		slog.Any("s3", c.S3),

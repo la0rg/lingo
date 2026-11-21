@@ -14,7 +14,8 @@ import (
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
-	"github.com/sashabaranov/go-openai"
+	"github.com/openai/openai-go/v3"
+	"github.com/openai/openai-go/v3/option"
 
 	"github.com/la0rg/lingo/internal/cardgen"
 	"github.com/la0rg/lingo/internal/client"
@@ -39,7 +40,7 @@ func Run(ctx context.Context, conf *config.Config) error {
 		return err
 	}
 
-	generator, err := cardgen.NewOpenAI(gpt)
+	generator, err := cardgen.NewOpenAI(gpt, generatorOpts(conf)...)
 	if err != nil {
 		return err
 	}
@@ -84,7 +85,20 @@ func gpt(conf *config.Config) cardgen.GPTClient {
 		return mock.GPTClient{}
 	}
 
-	return openai.NewClient(conf.OpenAIKey)
+	// the client retries connection errors, 408, 409, 429 and 5xx responses with backoff
+	client := openai.NewClient(option.WithAPIKey(conf.OpenAIKey), option.WithMaxRetries(2))
+	return &client.Chat.Completions
+}
+
+func generatorOpts(conf *config.Config) []cardgen.Option {
+	var opts []cardgen.Option
+	if conf.OpenAIModel != "" {
+		opts = append(opts, cardgen.WithModel(conf.OpenAIModel))
+	}
+	if conf.OpenAIReasoningEffort != "" {
+		opts = append(opts, cardgen.WithReasoningEffort(conf.OpenAIReasoningEffort))
+	}
+	return opts
 }
 
 func dbConfig(ctx context.Context, conf *config.Config) (aws.Config, error) {

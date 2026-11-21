@@ -5,35 +5,37 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/sashabaranov/go-openai"
+	"github.com/openai/openai-go/v3"
+	"github.com/openai/openai-go/v3/option"
 )
 
-// GPTClient is a fake OpenAI client for local development. It returns a placeholder card for any word.
+// GPTClient is a fake OpenAI client for local development (mockopenai: true).
+// It returns a placeholder card for any word.
 type GPTClient struct{}
 
-func (GPTClient) CreateChatCompletion(
-	_ context.Context,
-	request openai.ChatCompletionRequest,
-) (openai.ChatCompletionResponse, error) {
+func (GPTClient) New(
+	_ context.Context, body openai.ChatCompletionNewParams, _ ...option.RequestOption,
+) (*openai.ChatCompletion, error) {
 	var req struct {
 		Word string `json:"word"`
 	}
-	if len(request.Messages) > 0 {
-		_ = json.Unmarshal([]byte(request.Messages[len(request.Messages)-1].Content), &req)
+	for _, msg := range body.Messages {
+		if msg.OfUser != nil {
+			_ = json.Unmarshal([]byte(msg.OfUser.Content.OfString.Value), &req)
+		}
 	}
 
 	content, err := json.Marshal(Card(req.Word))
 	if err != nil {
-		return openai.ChatCompletionResponse{}, err
+		return nil, err
 	}
 
-	return openai.ChatCompletionResponse{
-		Choices: []openai.ChatCompletionChoice{
-			{
-				Message:      openai.ChatCompletionMessage{Content: string(content)},
-				FinishReason: openai.FinishReasonStop,
-			},
-		},
+	return &openai.ChatCompletion{
+		Model: "mock",
+		Choices: []openai.ChatCompletionChoice{{
+			Message:      openai.ChatCompletionMessage{Content: string(content)},
+			FinishReason: "stop",
+		}},
 	}, nil
 }
 

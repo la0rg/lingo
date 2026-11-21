@@ -7,7 +7,8 @@ package mocks
 import (
 	"context"
 
-	"github.com/sashabaranov/go-openai"
+	"github.com/openai/openai-go/v3"
+	"github.com/openai/openai-go/v3/option"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -47,68 +48,85 @@ func (_m *GPTClient) EXPECT() *GPTClient_Expecter {
 	return &GPTClient_Expecter{mock: &_m.Mock}
 }
 
-// CreateChatCompletion provides a mock function for the type GPTClient
-func (_mock *GPTClient) CreateChatCompletion(ctx context.Context, request openai.ChatCompletionRequest) (openai.ChatCompletionResponse, error) {
-	ret := _mock.Called(ctx, request)
+// New provides a mock function for the type GPTClient
+func (_mock *GPTClient) New(ctx context.Context, body openai.ChatCompletionNewParams, opts ...option.RequestOption) (*openai.ChatCompletion, error) {
+	var tmpRet mock.Arguments
+	if len(opts) > 0 {
+		tmpRet = _mock.Called(ctx, body, opts)
+	} else {
+		tmpRet = _mock.Called(ctx, body)
+	}
+	ret := tmpRet
 
 	if len(ret) == 0 {
-		panic("no return value specified for CreateChatCompletion")
+		panic("no return value specified for New")
 	}
 
-	var r0 openai.ChatCompletionResponse
+	var r0 *openai.ChatCompletion
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, openai.ChatCompletionRequest) (openai.ChatCompletionResponse, error)); ok {
-		return returnFunc(ctx, request)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, openai.ChatCompletionNewParams, ...option.RequestOption) (*openai.ChatCompletion, error)); ok {
+		return returnFunc(ctx, body, opts...)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, openai.ChatCompletionRequest) openai.ChatCompletionResponse); ok {
-		r0 = returnFunc(ctx, request)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, openai.ChatCompletionNewParams, ...option.RequestOption) *openai.ChatCompletion); ok {
+		r0 = returnFunc(ctx, body, opts...)
 	} else {
-		r0 = ret.Get(0).(openai.ChatCompletionResponse)
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*openai.ChatCompletion)
+		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, openai.ChatCompletionRequest) error); ok {
-		r1 = returnFunc(ctx, request)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, openai.ChatCompletionNewParams, ...option.RequestOption) error); ok {
+		r1 = returnFunc(ctx, body, opts...)
 	} else {
 		r1 = ret.Error(1)
 	}
 	return r0, r1
 }
 
-// GPTClient_CreateChatCompletion_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CreateChatCompletion'
-type GPTClient_CreateChatCompletion_Call struct {
+// GPTClient_New_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'New'
+type GPTClient_New_Call struct {
 	*mock.Call
 }
 
-// CreateChatCompletion is a helper method to define mock.On call
+// New is a helper method to define mock.On call
 //   - ctx context.Context
-//   - request openai.ChatCompletionRequest
-func (_e *GPTClient_Expecter) CreateChatCompletion(ctx any, request any) *GPTClient_CreateChatCompletion_Call {
-	return &GPTClient_CreateChatCompletion_Call{Call: _e.mock.On("CreateChatCompletion", ctx, request)}
+//   - body openai.ChatCompletionNewParams
+//   - opts ...option.RequestOption
+func (_e *GPTClient_Expecter) New(ctx any, body any, opts ...any) *GPTClient_New_Call {
+	return &GPTClient_New_Call{Call: _e.mock.On("New",
+		append([]any{ctx, body}, opts...)...)}
 }
 
-func (_c *GPTClient_CreateChatCompletion_Call) Run(run func(ctx context.Context, request openai.ChatCompletionRequest)) *GPTClient_CreateChatCompletion_Call {
+func (_c *GPTClient_New_Call) Run(run func(ctx context.Context, body openai.ChatCompletionNewParams, opts ...option.RequestOption)) *GPTClient_New_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 openai.ChatCompletionRequest
+		var arg1 openai.ChatCompletionNewParams
 		if args[1] != nil {
-			arg1 = args[1].(openai.ChatCompletionRequest)
+			arg1 = args[1].(openai.ChatCompletionNewParams)
 		}
+		var arg2 []option.RequestOption
+		var variadicArgs []option.RequestOption
+		if len(args) > 2 {
+			variadicArgs = args[2].([]option.RequestOption)
+		}
+		arg2 = variadicArgs
 		run(
 			arg0,
 			arg1,
+			arg2...,
 		)
 	})
 	return _c
 }
 
-func (_c *GPTClient_CreateChatCompletion_Call) Return(chatCompletionResponse openai.ChatCompletionResponse, err error) *GPTClient_CreateChatCompletion_Call {
-	_c.Call.Return(chatCompletionResponse, err)
+func (_c *GPTClient_New_Call) Return(chatCompletion *openai.ChatCompletion, err error) *GPTClient_New_Call {
+	_c.Call.Return(chatCompletion, err)
 	return _c
 }
 
-func (_c *GPTClient_CreateChatCompletion_Call) RunAndReturn(run func(ctx context.Context, request openai.ChatCompletionRequest) (openai.ChatCompletionResponse, error)) *GPTClient_CreateChatCompletion_Call {
+func (_c *GPTClient_New_Call) RunAndReturn(run func(ctx context.Context, body openai.ChatCompletionNewParams, opts ...option.RequestOption) (*openai.ChatCompletion, error)) *GPTClient_New_Call {
 	_c.Call.Return(run)
 	return _c
 }
