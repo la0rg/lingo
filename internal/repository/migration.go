@@ -7,9 +7,9 @@ import (
 	"log/slog"
 	"time"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
-	"github.com/aws/aws-sdk-go/aws"
 )
 
 var cardsTableSchema = &dynamodb.CreateTableInput{
@@ -35,10 +35,10 @@ var cardsTableSchema = &dynamodb.CreateTableInput{
 }
 
 type Migration struct {
-	client *dynamodb.Client
+	client DynamoAPI
 }
 
-func NewMigration(client *dynamodb.Client) Migration {
+func NewMigration(client DynamoAPI) Migration {
 	return Migration{client: client}
 }
 
@@ -69,8 +69,7 @@ func (m Migration) tableExists(ctx context.Context, tableName string) (bool, err
 		ctx, &dynamodb.DescribeTableInput{TableName: aws.String(tableName)},
 	)
 	if err != nil {
-		var notFoundEx *types.ResourceNotFoundException
-		if errors.As(err, &notFoundEx) {
+		if _, ok := errors.AsType[*types.ResourceNotFoundException](err); ok {
 			return false, nil
 		}
 
@@ -81,7 +80,7 @@ func (m Migration) tableExists(ctx context.Context, tableName string) (bool, err
 }
 
 func (m Migration) createTable(ctx context.Context, input *dynamodb.CreateTableInput) error {
-	slog.Info("Creating table", "table", input.TableName)
+	slog.Info("Creating table", "table", aws.ToString(input.TableName))
 
 	_, err := m.client.CreateTable(ctx, input)
 	if err != nil {

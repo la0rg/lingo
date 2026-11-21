@@ -19,7 +19,10 @@ func NewCollection() (*Collection, error) {
 	m := make(map[string]*model.Collection, len(collections))
 	var err error
 	for i := range collections {
-		c := &collections[i]
+		// copy the definition, so the package-level one keeps file names and can be loaded again
+		c := new(model.Collection)
+		*c = collections[i]
+		c.Template.Templates = append([]apkg.Template(nil), collections[i].Template.Templates...)
 
 		// read data files
 		c.Template.Css, err = readData(c.Template.Css)

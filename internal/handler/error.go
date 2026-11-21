@@ -2,10 +2,12 @@ package handler
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 
 	"github.com/la0rg/lingo/internal/logger"
+	"github.com/la0rg/lingo/internal/model"
 	"github.com/la0rg/lingo/web"
 )
 
@@ -16,7 +18,25 @@ var (
 	ErrNoValidWords       = BadRequest("The collection does not contain any valid words")
 	ErrInvalidWord        = BadRequest("Unable to create a card for this word")
 	ErrInvalidLanguage    = BadRequest("Invalid language selection")
+	ErrRateLimited        = &HTTPError{
+		Code:    http.StatusTooManyRequests,
+		Status:  http.StatusText(http.StatusTooManyRequests),
+		Message: "Too many words requested, please try again in a minute",
+	}
+	ErrBodyTooLarge = &HTTPError{
+		Code:    http.StatusRequestEntityTooLarge,
+		Status:  http.StatusText(http.StatusRequestEntityTooLarge),
+		Message: "Request is too large",
+	}
 )
+
+func ErrTooManyWords(limit int) *HTTPError {
+	return BadRequest(fmt.Sprintf("Too many words, the maximum is %d", limit))
+}
+
+func ErrWordTooLong(limit int) *HTTPError {
+	return BadRequest(fmt.Sprintf("Word is too long, the maximum is %d characters", limit))
+}
 
 type HTTPError struct {
 	Code    int    `json:"code"`
@@ -89,9 +109,33 @@ func (h *handlers) ErrorHandlerHTML(handler HandlerFunc) http.HandlerFunc {
 	}
 }
 
+// requestError maps a request validation error to an HTTP error.
+func requestError(err error) error {
+	var tooMany *model.TooManyWordsError
+	var tooLong *model.WordTooLongError
+	var maxBytes *http.MaxBytesError
+
+	switch {
+	case errors.Is(err, model.ErrEmptyWordList):
+		return ErrEmptyWordList
+	case errors.As(err, &tooMany):
+		return ErrTooManyWords(tooMany.Max)
+	case errors.As(err, &tooLong):
+		return ErrWordTooLong(tooLong.Max)
+	case errors.As(err, &maxBytes):
+		return ErrBodyTooLarge
+	default:
+		return BadRequest("Invalid request format")
+	}
+}
+
 func mapError(ctx context.Context, err error) *HTTPError {
-	if httpErr, ok := err.(*HTTPError); ok {
+	if httpErr, ok := errors.AsType[*HTTPError](err); ok {
 		return httpErr
+	}
+
+	if _, ok := errors.AsType[*http.MaxBytesError](err); ok {
+		return ErrBodyTooLarge
 	}
 
 	logger.WithContext(ctx).Error("unexpected error", "error", err)

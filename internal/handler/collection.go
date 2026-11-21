@@ -3,9 +3,7 @@ package handler
 import (
 	"errors"
 	"net/http"
-	"strings"
 
-	"github.com/la0rg/lingo/internal/maps"
 	"github.com/la0rg/lingo/internal/model"
 	"github.com/la0rg/lingo/internal/service"
 	istrings "github.com/la0rg/lingo/internal/strings"
@@ -19,7 +17,7 @@ func (h *handlers) Collection(w http.ResponseWriter, r *http.Request) error {
 
 func (h *handlers) CreateCollection(w http.ResponseWriter, r *http.Request) error {
 	if err := r.ParseForm(); err != nil {
-		return BadRequest("Invalid request format")
+		return requestError(err)
 	}
 
 	source, target := r.Form.Get("source"), r.Form.Get("target")
@@ -32,17 +30,17 @@ func (h *handlers) CreateCollection(w http.ResponseWriter, r *http.Request) erro
 		return ErrCollectionNotFound
 	}
 
-	wordsStr := r.Form.Get("words")
-	if wordsStr == "" {
-		return ErrEmptyWordList
+	request := model.APKGRequest{Words: istrings.SplitAny(r.Form.Get("words"), "\n,")}
+	request.Normalize()
+	if err := request.Validate(h.conf.Limits.MaxWords, h.conf.Limits.MaxWordLength); err != nil {
+		return requestError(err)
 	}
 
-	words := maps.Unique(trimWords(istrings.SplitAny(wordsStr, "\n,")))
-	if len(words) == 0 {
-		return ErrEmptyWordList
+	if !h.limiter.Allow(w, r, len(request.Words)) {
+		return ErrRateLimited
 	}
 
-	file, err := h.apkg.CreateOnS3(r.Context(), collection, words...)
+	file, err := h.apkg.CreateOnS3(r.Context(), collection, request.Words...)
 	if err != nil {
 		if errors.Is(err, service.ErrEmptyCards) {
 			return ErrNoValidWords
@@ -54,22 +52,7 @@ func (h *handlers) CreateCollection(w http.ResponseWriter, r *http.Request) erro
 	return h.HTML(w, r, web.CollectionDownload, map[string]any{
 		"URL":            file.URL,
 		"CardsCount":     file.CardsCount,
-		"RequestedCount": len(words),
+		"RequestedCount": len(request.Words),
 		"MissingWords":   file.MissingWords,
 	})
-}
-
-// trimWords trims and removes empty words from the slice. Words are converted to lowercase.
-// The slice is modified in place.
-func trimWords(words []string) []string {
-	total := 0
-	for _, word := range words {
-		word := strings.ToLower(strings.TrimSpace(word))
-		if word != "" {
-			words[total] = word
-			total++
-		}
-	}
-
-	return words[:total]
 }

@@ -1,0 +1,27 @@
+# Generate with `make mocks`. Never edit generated mocks by hand.
+all: false
+dir: '{{.InterfaceDir}}/mocks'
+filename: mocks.go
+pkgname: mocks
+structname: '{{.InterfaceName}}'
+template: testify
+formatter: goimports
+force-file-write: true
+packages:
+  github.com/la0rg/lingo/internal/handler:
+    interfaces:
+      CardService: {}
+      APKGService: {}
+  github.com/la0rg/lingo/internal/service:
+    interfaces:
+      CardGenerator: {}
+      CardRepository: {}
+      APKGRepository: {}
+      CardGetter: {}
+  github.com/la0rg/lingo/internal/repository:
+    interfaces:
+      S3Client: {}
+      DynamoAPI: {}
+  github.com/la0rg/lingo/internal/cardgen:
+    interfaces:
+      GPTClient: {}

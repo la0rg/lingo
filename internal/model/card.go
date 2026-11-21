@@ -40,6 +40,12 @@ func (c Card) FieldByName(name CardField) string {
 	return ""
 }
 
+// GetAllResult is the outcome of fetching cards for a list of words.
+type GetAllResult struct {
+	Cards        []Card
+	MissingWords []string
+}
+
 type Translations []Translation
 
 func (t Translations) String() string {

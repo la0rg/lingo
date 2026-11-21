@@ -5,13 +5,11 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/go-chi/chi"
-
 	"github.com/la0rg/lingo/internal/model"
 )
 
 func (h *handlers) APKG(w http.ResponseWriter, r *http.Request) error {
-	collectionSlug := strings.ToLower(chi.URLParam(r, "collection"))
+	collectionSlug := strings.ToLower(r.PathValue("collection"))
 
 	collection := h.collection.GetBySlug(collectionSlug)
 	if collection == nil {
@@ -20,11 +18,12 @@ func (h *handlers) APKG(w http.ResponseWriter, r *http.Request) error {
 
 	var request model.APKGRequest
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
-		return BadRequest("invalid request format")
+		return requestError(err)
 	}
 
-	if len(request.Words) == 0 {
-		return BadRequest("no words provided")
+	request.Normalize()
+	if err := request.Validate(h.conf.Limits.MaxWords, h.conf.Limits.MaxWordLength); err != nil {
+		return requestError(err)
 	}
 
 	file, err := h.apkg.CreateOnS3(r.Context(), collection, request.Words...)

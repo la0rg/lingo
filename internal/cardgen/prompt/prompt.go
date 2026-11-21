@@ -2,5 +2,7 @@ package prompt
 
 import _ "embed"
 
-//go:embed system
+// System is the system prompt for card generation.
+//
+//go:embed system.md
 var System string

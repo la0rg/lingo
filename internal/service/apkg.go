@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"html"
 	"time"
 
 	"github.com/google/uuid"
@@ -26,7 +27,7 @@ func NewAPKG(card CardGetter, apkgRepo APKGRepository) *APKG {
 }
 
 type CardGetter interface {
-	GetAll(ctx context.Context, collection *model.Collection, words ...string) (*GetAllResult, error)
+	GetAll(ctx context.Context, collection *model.Collection, words ...string) (*model.GetAllResult, error)
 }
 
 func (s *APKG) CreateOnS3(
@@ -73,7 +74,8 @@ func (s *APKG) buildAPKG(collection *model.Collection, cards []model.Card) (*apk
 	for _, card := range cards {
 		note := apkg.Note{ID: card.ID, Model: collection.Template}
 		for _, field := range collection.Template.Fields {
-			note.Fields = append(note.Fields, card.FieldByName(field))
+			// Anki renders fields as HTML, so LLM output must be escaped.
+			note.Fields = append(note.Fields, html.EscapeString(card.FieldByName(field)))
 		}
 		notes = append(notes, note)
 	}
