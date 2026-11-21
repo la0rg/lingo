@@ -13,7 +13,10 @@ type S3 struct {
 }
 
 func NewS3(ctx context.Context, awsConfig aws.Config) (*S3, error) {
-	client := s3.NewFromConfig(awsConfig)
+	client := s3.NewFromConfig(awsConfig, func(o *s3.Options) {
+		// Custom endpoints (MinIO, local dev) don't support virtual-hosted-style bucket addressing.
+		o.UsePathStyle = awsConfig.BaseEndpoint != nil
+	})
 	presignedClient := s3.NewPresignClient(client)
 
 	return &S3{

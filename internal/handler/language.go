@@ -13,7 +13,7 @@ const languageCookie = "language"
 
 func (h *handlers) Language(w http.ResponseWriter, r *http.Request) error {
 	if err := r.ParseForm(); err != nil {
-		return BadRequest("Invalid request format")
+		return formError(err)
 	}
 
 	source, target := r.Form.Get("source"), r.Form.Get("target")
@@ -31,6 +31,8 @@ func (h *handlers) Language(w http.ResponseWriter, r *http.Request) error {
 		Value:    fmt.Sprintf("%s,%s", languageSelector.SourceCountryCode, languageSelector.TargetCountryCode),
 		Path:     "/",
 		SameSite: http.SameSiteLaxMode,
+		Secure:   true,
+		HttpOnly: true,
 	})
 
 	if refererURL, err := url.Parse(r.Referer()); err == nil && refererURL.Path == "/" {

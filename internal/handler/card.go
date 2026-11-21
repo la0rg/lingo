@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/v5"
 )
 
 func (h *handlers) Card(w http.ResponseWriter, r *http.Request) error {
@@ -18,6 +18,10 @@ func (h *handlers) Card(w http.ResponseWriter, r *http.Request) error {
 	word := strings.TrimSpace(chi.URLParam(r, "word"))
 	if len(word) == 0 {
 		return ErrEmptyWord
+	}
+
+	if err := h.validateWords(word); err != nil {
+		return err
 	}
 
 	card, err := h.card.Get(r.Context(), collection, word)

@@ -1,4 +1,4 @@
-FROM golang:1.24 AS build
+FROM golang:1.27 AS build
 
 WORKDIR /app
 
@@ -13,7 +13,9 @@ RUN CGO_ENABLED=0 GOOS=linux \
     -X 'github.com/la0rg/lingo/internal/config.gitVersion=$(git describe --tags --abbrev=0 | tr -d '\n')'" \
     -o lingo main.go
 
-FROM alpine:3.19
+FROM alpine:3
+RUN apk add --no-cache ca-certificates && adduser -D -H -u 10001 lingo
 WORKDIR /app
 COPY --from=build /app/lingo .
+USER lingo
 ENTRYPOINT ["/app/lingo"]

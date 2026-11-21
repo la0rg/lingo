@@ -2,10 +2,11 @@ package handler
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strings"
 
-	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/v5"
 
 	"github.com/la0rg/lingo/internal/model"
 )
@@ -20,14 +21,23 @@ func (h *handlers) APKG(w http.ResponseWriter, r *http.Request) error {
 
 	var request model.APKGRequest
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		var maxBytesErr *http.MaxBytesError
+		if errors.As(err, &maxBytesErr) {
+			return ErrBodyTooLarge
+		}
 		return BadRequest("invalid request format")
 	}
 
-	if len(request.Words) == 0 {
+	words := normalizeWords(request.Words)
+	if len(words) == 0 {
 		return BadRequest("no words provided")
 	}
 
-	file, err := h.apkg.CreateOnS3(r.Context(), collection, request.Words...)
+	if err := h.validateWords(words...); err != nil {
+		return err
+	}
+
+	file, err := h.apkg.CreateOnS3(r.Context(), collection, words...)
 	if err != nil {
 		return err
 	}

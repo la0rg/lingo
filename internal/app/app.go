@@ -108,16 +108,8 @@ func s3Config(ctx context.Context, conf *config.Config) (aws.Config, error) {
 func awsOpts(conf config.AWS) []func(*awsconfig.LoadOptions) error {
 	var options []func(*awsconfig.LoadOptions) error
 
-	if conf.Endpoint != "" && conf.Region != "" {
-		staticResolver := aws.EndpointResolverWithOptionsFunc(
-			func(service, region string, options ...interface{}) (aws.Endpoint, error) {
-				return aws.Endpoint{
-					URL:               conf.Endpoint,
-					SigningRegion:     region,
-					HostnameImmutable: true,
-				}, nil
-			})
-		options = append(options, awsconfig.WithEndpointResolverWithOptions(staticResolver))
+	if conf.Endpoint != "" {
+		options = append(options, awsconfig.WithBaseEndpoint(conf.Endpoint))
 	}
 
 	if conf.Key != "" && conf.Secret != "" {

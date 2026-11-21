@@ -1,13 +1,13 @@
 package handler
 
 import (
+	"crypto/subtle"
 	"net/http"
 	"runtime/debug"
-	"slices"
 	"strings"
 	"time"
 
-	"github.com/go-chi/chi/middleware"
+	"github.com/go-chi/chi/v5/middleware"
 	"github.com/google/uuid"
 	"github.com/la0rg/lingo/internal/config"
 	"github.com/la0rg/lingo/internal/ctxval"
@@ -17,7 +17,20 @@ import (
 const (
 	requestIDHeader       = "X-Request-ID"
 	cloudflareRayIDHeader = "Cf-Ray"
+
+	// maxBodyBytes is enough for MaxWords words of MaxWordLength runes with the default limits.
+	maxBodyBytes = 64 << 10
 )
+
+// MaxBodySize caps the size of request bodies.
+func MaxBodySize(limit int64) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			r.Body = http.MaxBytesReader(w, r.Body, limit)
+			next.ServeHTTP(w, r)
+		})
+	}
+}
 
 func APIKey(c *config.Config) func(http.Handler) http.Handler {
 	return func(h http.Handler) http.Handler {
@@ -34,8 +47,7 @@ func APIKey(c *config.Config) func(http.Handler) http.Handler {
 				return
 			}
 
-			apiKey := parts[1]
-			if !slices.Contains(c.APIKeys, apiKey) {
+			if !validAPIKey(c.APIKeys, parts[1]) {
 				http.Error(w, "Invalid token", http.StatusUnauthorized)
 				return
 			}
@@ -43,6 +55,38 @@ func APIKey(c *config.Config) func(http.Handler) http.Handler {
 			h.ServeHTTP(w, r)
 		})
 	}
+}
+
+// validAPIKey compares the key against every configured key in constant time.
+func validAPIKey(keys []string, key string) bool {
+	valid := 0
+	for _, k := range keys {
+		valid |= subtle.ConstantTimeCompare([]byte(k), []byte(key))
+	}
+	return valid == 1
+}
+
+var sensitiveHeaders = []string{"Authorization", "Cookie", "Set-Cookie", "Proxy-Authorization", "X-Api-Key"}
+
+// redactHeaders returns a copy of h with sensitive header values replaced.
+func redactHeaders(h http.Header) http.Header {
+	c := h.Clone()
+	for _, name := range sensitiveHeaders {
+		if _, ok := c[http.CanonicalHeaderKey(name)]; ok {
+			c.Set(name, "[REDACTED]")
+		}
+	}
+	return c
+}
+
+func SecurityHeaders(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		h := w.Header()
+		h.Set("X-Content-Type-Options", "nosniff")
+		h.Set("X-Frame-Options", "DENY")
+		h.Set("Referrer-Policy", "strict-origin-when-cross-origin")
+		next.ServeHTTP(w, r)
+	})
 }
 
 func RequestLogger(h http.Handler) http.Handler {
@@ -56,8 +100,8 @@ func RequestLogger(h http.Handler) http.Handler {
 			"request handled",
 			"status", ww.Status(),
 			"bytes", ww.BytesWritten(),
-			"request_headers", r.Header,
-			"response_headers", ww.Header(),
+			"request_headers", redactHeaders(r.Header),
+			"response_headers", redactHeaders(ww.Header()),
 			"latency", time.Since(t1).Milliseconds(),
 			"url", r.URL.String(),
 		)

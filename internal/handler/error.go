@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -16,7 +17,25 @@ var (
 	ErrNoValidWords       = BadRequest("The collection does not contain any valid words")
 	ErrInvalidWord        = BadRequest("Unable to create a card for this word")
 	ErrInvalidLanguage    = BadRequest("Invalid language selection")
+	ErrRateLimited        = &HTTPError{
+		Code:    http.StatusTooManyRequests,
+		Status:  http.StatusText(http.StatusTooManyRequests),
+		Message: "Too many words requested, please try again in a minute",
+	}
+	ErrBodyTooLarge = &HTTPError{
+		Code:    http.StatusRequestEntityTooLarge,
+		Status:  http.StatusText(http.StatusRequestEntityTooLarge),
+		Message: "Request is too large",
+	}
 )
+
+func ErrTooManyWords(limit int) *HTTPError {
+	return BadRequest(fmt.Sprintf("Too many words, the maximum is %d", limit))
+}
+
+func ErrWordTooLong(limit int) *HTTPError {
+	return BadRequest(fmt.Sprintf("Word is too long, the maximum is %d characters", limit))
+}
 
 type HTTPError struct {
 	Code    int    `json:"code"`
@@ -90,8 +109,14 @@ func (h *handlers) ErrorHandlerHTML(handler HandlerFunc) http.HandlerFunc {
 }
 
 func mapError(ctx context.Context, err error) *HTTPError {
-	if httpErr, ok := err.(*HTTPError); ok {
+	var httpErr *HTTPError
+	if errors.As(err, &httpErr) {
 		return httpErr
+	}
+
+	var maxBytesErr *http.MaxBytesError
+	if errors.As(err, &maxBytesErr) {
+		return ErrBodyTooLarge
 	}
 
 	logger.WithContext(ctx).Error("unexpected error", "error", err)

@@ -62,7 +62,15 @@ func (g OpenAI) retryRequest(ctx context.Context, req string) (*model.Card, erro
 			return card, nil
 		}
 
-		time.Sleep(retryDelay)
+		if i == retries {
+			break
+		}
+
+		select {
+		case <-ctx.Done():
+			return nil, ctx.Err()
+		case <-time.After(retryDelay):
+		}
 	}
 	return card, err
 }
@@ -71,8 +79,8 @@ func (g OpenAI) makeRequest(ctx context.Context, req string) (*model.Card, error
 	resp, err := g.client.CreateChatCompletion(
 		ctx,
 		oai.ChatCompletionRequest{
-			MaxTokens: tokenLimit,
-			Model:     openAImodel,
+			MaxCompletionTokens: tokenLimit,
+			Model:               openAImodel,
 			ResponseFormat: &oai.ChatCompletionResponseFormat{
 				Type: oai.ChatCompletionResponseFormatTypeJSONObject,
 			},

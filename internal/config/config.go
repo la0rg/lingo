@@ -3,6 +3,7 @@ package config
 import (
 	"errors"
 	"fmt"
+	"log/slog"
 	"reflect"
 	"strings"
 
@@ -17,6 +18,62 @@ type Config struct {
 	APIKeys    []string
 	Dynamo     AWS
 	S3         S3
+	Limits     Limits
+}
+
+// Limits protect the paid OpenAI-backed endpoints from abuse.
+type Limits struct {
+	// MaxWords is the maximum number of words accepted in a single collection request.
+	MaxWords int
+	// MaxWordLength is the maximum length of a single word, in runes.
+	MaxWordLength int
+	// WordsPerMinute is the per-client rate of words accepted by the public (unauthenticated) endpoints.
+	WordsPerMinute int
+	// WordsBurst is the number of words a client can request at once. It must be >= MaxWords.
+	WordsBurst int
+	// ClientIPHeader is a trusted proxy header that holds the client IP (e.g. "Cf-Connecting-IP").
+	// Leave it empty to use the TCP remote address. Set it only when the origin is reachable through the proxy alone,
+	// otherwise clients can spoof it.
+	ClientIPHeader string
+}
+
+const redacted = "[REDACTED]"
+
+// LogValue implements slog.LogValuer so secrets never end up in logs.
+func (c Config) LogValue() slog.Value {
+	return slog.GroupValue(
+		slog.String("loglevel", c.LogLevel),
+		slog.Int("port", c.Port),
+		slog.Bool("mockopenai", c.MockOpenAI),
+		slog.String("openaikey", redactString(c.OpenAIKey)),
+		slog.Int("apikeys_count", len(c.APIKeys)),
+		slog.Any("dynamo", c.Dynamo),
+		slog.Any("s3", c.S3),
+		slog.Any("limits", c.Limits),
+	)
+}
+
+func (a AWS) LogValue() slog.Value {
+	return slog.GroupValue(
+		slog.String("region", a.Region),
+		slog.String("endpoint", a.Endpoint),
+		slog.String("key", redactString(a.Key)),
+		slog.String("secret", redactString(a.Secret)),
+	)
+}
+
+func (s S3) LogValue() slog.Value {
+	return slog.GroupValue(
+		slog.Any("aws", s.AWS),
+		slog.String("bucket", s.Bucket),
+	)
+}
+
+func redactString(s string) string {
+	if s == "" {
+		return ""
+	}
+	return redacted
 }
 
 type S3 struct {
@@ -35,6 +92,12 @@ func Load() (*Config, error) {
 	var conf = Config{
 		LogLevel: "info",
 		Port:     8080,
+		Limits: Limits{
+			MaxWords:       100,
+			MaxWordLength:  64,
+			WordsPerMinute: 200,
+			WordsBurst:     200,
+		},
 	}
 
 	viper.SetConfigName("config")
@@ -53,6 +116,11 @@ func Load() (*Config, error) {
 
 	if err := viper.Unmarshal(&conf); err != nil {
 		return nil, fmt.Errorf("unable to unmarshal config: %w", err)
+	}
+
+	if conf.Limits.WordsBurst < conf.Limits.MaxWords {
+		return nil, fmt.Errorf("limits.wordsburst (%d) must be >= limits.maxwords (%d)",
+			conf.Limits.WordsBurst, conf.Limits.MaxWords)
 	}
 
 	return &conf, nil

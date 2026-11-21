@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/v5"
 	"github.com/la0rg/lingo/internal/config"
 	"github.com/la0rg/lingo/internal/model"
 	"github.com/la0rg/lingo/web"
@@ -28,6 +28,7 @@ type CollectionGetter interface {
 
 type handlers struct {
 	conf       *config.Config
+	limiter    *WordLimiter
 	card       CardService
 	apkg       APKGService
 	tmpl       TemplateRenderer
@@ -41,11 +42,18 @@ func NewRouter(
 	tmpl TemplateRenderer,
 	collection CollectionGetter,
 ) http.Handler {
-	handlers := handlers{conf: conf, card: card, apkg: apkg, tmpl: tmpl, collection: collection}
+	handlers := handlers{
+		conf:       conf,
+		limiter:    NewWordLimiter(conf.Limits.WordsPerMinute, conf.Limits.WordsBurst, conf.Limits.ClientIPHeader),
+		card:       card,
+		apkg:       apkg,
+		tmpl:       tmpl,
+		collection: collection,
+	}
 	publicHandler := http.FileServer(http.FS(web.PublicFS))
 
 	r := chi.NewRouter()
-	r.Use(RequestLogger, RequestID, Recoverer)
+	r.Use(RequestLogger, RequestID, Recoverer, SecurityHeaders, MaxBodySize(maxBodyBytes))
 	r.Get("/version", ErrorHandler(handlers.Version))
 
 	r.Route("/api/collections/{collection}", func(r chi.Router) {
