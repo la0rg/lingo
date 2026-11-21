@@ -69,8 +69,7 @@ func (m Migration) tableExists(ctx context.Context, tableName string) (bool, err
 		ctx, &dynamodb.DescribeTableInput{TableName: aws.String(tableName)},
 	)
 	if err != nil {
-		var notFoundEx *types.ResourceNotFoundException
-		if errors.As(err, &notFoundEx) {
+		if _, ok := errors.AsType[*types.ResourceNotFoundException](err); ok {
 			return false, nil
 		}
 

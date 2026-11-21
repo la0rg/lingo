@@ -130,13 +130,11 @@ func requestError(err error) error {
 }
 
 func mapError(ctx context.Context, err error) *HTTPError {
-	var httpErr *HTTPError
-	if errors.As(err, &httpErr) {
+	if httpErr, ok := errors.AsType[*HTTPError](err); ok {
 		return httpErr
 	}
 
-	var maxBytesErr *http.MaxBytesError
-	if errors.As(err, &maxBytesErr) {
+	if _, ok := errors.AsType[*http.MaxBytesError](err); ok {
 		return ErrBodyTooLarge
 	}
 

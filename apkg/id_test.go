@@ -29,14 +29,12 @@ func TestNewID_Concurrent(t *testing.T) {
 	var wg sync.WaitGroup
 	ids := make(chan int64, numGoroutines*idsPerGoroutine)
 
-	for i := 0; i < numGoroutines; i++ {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for j := 0; j < idsPerGoroutine; j++ {
+	for range numGoroutines {
+		wg.Go(func() {
+			for range idsPerGoroutine {
 				ids <- NewID()
 			}
-		}()
+		})
 	}
 
 	go func() {
@@ -54,7 +52,7 @@ func TestNewID_Concurrent(t *testing.T) {
 
 func TestNewID_IncreasingOrder(t *testing.T) {
 	ids := make([]int64, 1000)
-	for i := 0; i < 1000; i++ {
+	for i := range 1000 {
 		ids[i] = NewID()
 	}
 

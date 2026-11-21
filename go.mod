@@ -1,6 +1,6 @@
 module github.com/la0rg/lingo
 
-go 1.26.0
+go 1.27.4
 
 require (
 	github.com/aws/aws-sdk-go-v2 v1.48.0
@@ -9,7 +9,6 @@ require (
 	github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.21.23
 	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.74.1
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.116.0
-	github.com/go-chi/chi/v5 v5.5.0
 	github.com/go-chi/httprate v0.16.1
 	github.com/google/uuid v1.6.0
 	github.com/openai/openai-go/v3 v3.105.0

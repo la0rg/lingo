@@ -14,7 +14,7 @@ import (
 func TestGetAllKeys(t *testing.T) {
 	t.Parallel()
 
-	keys := getAllKeys(reflect.TypeOf(Config{}))
+	keys := getAllKeys(reflect.TypeFor[Config]())
 
 	assert.Subset(t, keys, []string{
 		"loglevel", "port", "mockopenai", "openaikey", "apikeys",

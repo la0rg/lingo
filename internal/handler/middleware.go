@@ -7,7 +7,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-chi/chi/v5/middleware"
 	"github.com/google/uuid"
 	"github.com/la0rg/lingo/internal/config"
 	"github.com/la0rg/lingo/internal/ctxval"
@@ -92,20 +91,47 @@ func SecurityHeaders(next http.Handler) http.Handler {
 func RequestLogger(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		t1 := time.Now()
-		ww := middleware.NewWrapResponseWriter(w, r.ProtoMajor)
+		rec := &statusRecorder{ResponseWriter: w, status: http.StatusOK}
 
-		h.ServeHTTP(ww, r)
+		h.ServeHTTP(rec, r)
 
 		logger.WithContext(r.Context()).Info(
 			"request handled",
-			"status", ww.Status(),
-			"bytes", ww.BytesWritten(),
+			"status", rec.status,
+			"bytes", rec.bytes,
 			"request_headers", redactHeaders(r.Header),
-			"response_headers", redactHeaders(ww.Header()),
+			"response_headers", redactHeaders(rec.Header()),
 			"latency", time.Since(t1).Milliseconds(),
 			"url", r.URL.String(),
 		)
 	})
+}
+
+// statusRecorder records the status code and the number of bytes written for logging.
+type statusRecorder struct {
+	http.ResponseWriter
+	status      int
+	bytes       int
+	wroteHeader bool
+}
+
+func (r *statusRecorder) WriteHeader(code int) {
+	if !r.wroteHeader {
+		r.status, r.wroteHeader = code, true
+	}
+	r.ResponseWriter.WriteHeader(code)
+}
+
+func (r *statusRecorder) Write(b []byte) (int, error) {
+	r.wroteHeader = true
+	n, err := r.ResponseWriter.Write(b)
+	r.bytes += n
+	return n, err
+}
+
+// Unwrap lets http.ResponseController reach the underlying writer.
+func (r *statusRecorder) Unwrap() http.ResponseWriter {
+	return r.ResponseWriter
 }
 
 func Recoverer(next http.Handler) http.Handler {

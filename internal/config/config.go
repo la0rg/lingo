@@ -148,7 +148,7 @@ func Load() (*Config, error) {
 }
 
 func bindEnvs() error {
-	configType := reflect.TypeOf(Config{})
+	configType := reflect.TypeFor[Config]()
 	keys := getAllKeys(configType)
 
 	for _, key := range keys {
@@ -164,9 +164,7 @@ func bindEnvs() error {
 func getAllKeys(t reflect.Type) []string {
 	var result []string
 
-	for i := 0; i < t.NumField(); i++ {
-		f := t.Field(i)
-
+	for f := range t.Fields() {
 		name := strings.ToLower(f.Name)
 		squashParentName := strings.Contains(f.Tag.Get("mapstructure"), "squash")
 

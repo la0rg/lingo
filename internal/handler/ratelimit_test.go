@@ -3,6 +3,7 @@ package handler
 import (
 	"net/http"
 	"net/http/httptest"
+	"net/netip"
 	"testing"
 	"testing/synctest"
 	"time"
@@ -74,4 +75,54 @@ func TestWordLimiter_TrustedProxy(t *testing.T) {
 		assert.False(t, limitedRequest(limits, l, "192.0.2.9:1", "198.51.100.4", 1),
 			"header from an untrusted address is ignored")
 	})
+}
+
+func TestResolveClientIP(t *testing.T) {
+	t.Parallel()
+
+	cloudflare := []netip.Prefix{netip.MustParsePrefix("173.245.48.0/20"), netip.MustParsePrefix("2400:cb00::/32")}
+
+	cases := []struct {
+		name       string
+		remoteAddr string
+		header     string
+		values     []string
+		proxies    []netip.Prefix
+		want       string
+	}{
+		{"remote address", "192.0.2.1:1234", "", nil, nil, "192.0.2.1"},
+		{"remote address without port", "192.0.2.1", "", nil, nil, "192.0.2.1"},
+		{"ipv6 remote address", "[2001:db8::1]:1234", "", nil, nil, "2001:db8::1"},
+		{"ipv4-mapped ipv6 is folded", "[::ffff:192.0.2.1]:1", "", nil, nil, "192.0.2.1"},
+		{"invalid remote address", "garbage", "", nil, nil, ""},
+		{"header ignored when not configured", "192.0.2.1:1", "", []string{"198.51.100.1"}, nil, "192.0.2.1"},
+		{"header from trusted proxy", "173.245.48.5:1", "CF-Connecting-IP", []string{"198.51.100.1"}, cloudflare,
+			"198.51.100.1"},
+		{"ipv6 header from ipv6 proxy", "[2400:cb00::1]:1", "CF-Connecting-IP", []string{"2001:db8::7"}, cloudflare,
+			"2001:db8::7"},
+		{"header from untrusted address", "192.0.2.1:1", "CF-Connecting-IP", []string{"198.51.100.1"}, cloudflare,
+			"192.0.2.1"},
+		{"no prefixes trusts every address", "192.0.2.1:1", "CF-Connecting-IP", []string{"198.51.100.1"}, nil,
+			"198.51.100.1"},
+		{"missing header falls back to remote", "173.245.48.5:1", "CF-Connecting-IP", nil, cloudflare,
+			"173.245.48.5"},
+		{"last header value wins", "173.245.48.5:1", "CF-Connecting-IP", []string{"6.6.6.6", " 198.51.100.1 "},
+			cloudflare, "198.51.100.1"},
+		{"invalid header fails closed", "173.245.48.5:1", "CF-Connecting-IP", []string{"198.51.100.1", "nope"},
+			cloudflare, ""},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			t.Parallel()
+
+			req := httptest.NewRequest(http.MethodGet, "/", nil)
+			req.RemoteAddr = c.remoteAddr
+			for _, v := range c.values {
+				req.Header.Add("CF-Connecting-IP", v)
+			}
+
+			assert.Equal(t, c.want, resolveClientIP(req, c.header, c.proxies))
+		})
+	}
 }

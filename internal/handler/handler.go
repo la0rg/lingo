@@ -3,8 +3,8 @@ package handler
 import (
 	"context"
 	"net/http"
+	"slices"
 
-	"github.com/go-chi/chi/v5"
 	"github.com/la0rg/lingo/internal/config"
 	"github.com/la0rg/lingo/internal/model"
 	"github.com/la0rg/lingo/web"
@@ -50,25 +50,32 @@ func NewRouter(
 		tmpl:       tmpl,
 		collection: collection,
 	}
-	publicHandler := http.FileServer(http.FS(web.PublicFS))
+	apiKey := APIKey(conf)
+	html := handlers.ErrorHandlerHTML
 
-	r := chi.NewRouter()
-	r.Use(RequestLogger, RequestID, Recoverer, SecurityHeaders, MaxBodySize(maxBodyBytes), clientIP(conf.Limits))
-	r.Get("/version", ErrorHandler(handlers.Version))
+	mux := http.NewServeMux()
+	mux.Handle("GET /version", ErrorHandler(handlers.Version))
 
-	r.Route("/api/collections/{collection}", func(r chi.Router) {
-		r.Use(APIKey(conf))
-		r.Get("/cards/{word}", ErrorHandler(handlers.Card))
-		r.Post("/apkg", ErrorHandler(handlers.APKG))
-	})
+	mux.Handle("GET /api/collections/{collection}/cards/{word}", apiKey(ErrorHandler(handlers.Card)))
+	mux.Handle("POST /api/collections/{collection}/apkg", apiKey(ErrorHandler(handlers.APKG)))
 
-	r.Get("/card", handlers.ErrorHandlerHTML(handlers.CardPreview))
-	r.Post("/language", handlers.ErrorHandlerHTML(handlers.Language))
-	r.Get("/collection", handlers.ErrorHandlerHTML(handlers.Collection))
-	r.Post("/collection", handlers.ErrorHandlerHTML(handlers.CreateCollection))
-	r.Get("/styles.css", handlers.ErrorHandlerHTML(handlers.Styles))
-	r.Get("/public/*", publicHandler.ServeHTTP)
-	r.Get("/", handlers.ErrorHandlerHTML(handlers.Index))
+	mux.Handle("GET /card", html(handlers.CardPreview))
+	mux.Handle("POST /language", html(handlers.Language))
+	mux.Handle("GET /collection", html(handlers.Collection))
+	mux.Handle("POST /collection", html(handlers.CreateCollection))
+	mux.Handle("GET /styles.css", html(handlers.Styles))
+	mux.Handle("GET /public/", http.FileServerFS(web.PublicFS))
+	mux.Handle("GET /{$}", html(handlers.Index))
 
-	return r
+	return chain(mux,
+		RequestLogger, RequestID, Recoverer, SecurityHeaders, MaxBodySize(maxBodyBytes), clientIP(conf.Limits),
+	)
+}
+
+// chain wraps h with middlewares, the first one being the outermost.
+func chain(h http.Handler, middlewares ...func(http.Handler) http.Handler) http.Handler {
+	for _, middleware := range slices.Backward(middlewares) {
+		h = middleware(h)
+	}
+	return h
 }

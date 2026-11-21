@@ -90,7 +90,7 @@ of up to `limits.maxwordlength` characters (default 64).
 ## Development
 
 ### Prerequisites
-- Go 1.26 or higher
+- Go 1.27.4 or higher
 - Docker
 - Node.js (for TailwindCSS)
 
